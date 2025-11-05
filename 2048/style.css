@@ -1,0 +1,427 @@
+/* 全局样式 */
+html, body {
+    margin: 0;
+    padding: 0;
+    background-color: #faf8ef;
+    color: #776e65;
+    font-family: "Clear Sans", "Helvetica Neue", Arial, sans-serif;
+    font-size: 18px;
+}
+
+.container {
+    width: 500px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+h1 {
+    font-size: 80px;
+    font-weight: bold;
+    margin: 0;
+    display: block;
+    float: left;
+}
+
+/* 分数样式 */
+.scores-container {
+    float: right;
+    text-align: right;
+}
+
+.score-container, .best-container {
+    position: relative;
+    display: inline-block;
+    background: #bbada0;
+    padding: 15px 25px;
+    font-size: 25px;
+    height: 45px;  /* 增加高度以容纳两行文本 */
+    font-weight: bold;
+    border-radius: 3px;
+    color: white;
+    margin-top: 8px;
+    text-align: center;
+}
+
+.score-label {
+    position: absolute;
+    width: 100%;
+    top: 10px;
+    left: 0;
+    text-transform: uppercase;
+    font-size: 13px;
+    line-height: 13px;
+    text-align: center;
+    color: #eee4da;
+}
+
+#score, #best-score {
+    position: absolute;
+    width: 100%;
+    bottom: 10px;
+    left: 0;
+    line-height: 25px;
+    text-align: center;
+}
+
+.score-container .score-addition {
+    position: absolute;
+    right: 30px;
+    color: rgba(119, 110, 101, 0.9);
+    font-size: 25px;
+    line-height: 25px;
+    font-weight: bold;
+    color: rgba(119, 110, 101, 0.9);
+    z-index: 100;
+    animation: move-up 600ms ease-in;
+    animation-fill-mode: both;
+}
+
+@keyframes move-up {
+    0% {
+        top: 25px;
+        opacity: 1;
+    }
+    100% {
+        top: -50px;
+        opacity: 0;
+    }
+}
+
+/* 游戏说明 */
+.game-intro {
+    margin-top: 0;
+    margin-bottom: 10px;
+    line-height: 1.65;
+}
+
+/* 按钮样式 */
+#new-game-button {
+    display: inline-block;
+    background: #8f7a66;
+    border-radius: 3px;
+    padding: 0 20px;
+    text-decoration: none;
+    color: #f9f6f2;
+    height: 40px;
+    line-height: 42px;
+    cursor: pointer;
+    display: block;
+    text-align: center;
+    float: right;
+    margin-top: 8px;
+    font-weight: bold;
+}
+
+/* 游戏容器 */
+.game-container {
+    margin-top: 40px;
+    position: relative;
+    padding: 15px;
+    cursor: default;
+    background: #bbada0;
+    border-radius: 6px;
+    width: 500px;
+    height: 500px;
+    box-sizing: border-box;
+}
+
+/* 游戏消息 */
+.game-message {
+    display: none;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: rgba(238, 228, 218, 0.5);
+    z-index: 100;
+    text-align: center;
+    animation: fade-in 800ms ease 1200ms;
+    animation-fill-mode: both;
+}
+
+.game-message p {
+    font-size: 60px;
+    font-weight: bold;
+    height: 60px;
+    line-height: 60px;
+    margin-top: 222px;
+}
+
+.game-message .lower {
+    display: block;
+    margin-top: 59px;
+}
+
+.game-message a {
+    display: inline-block;
+    background: #8f7a66;
+    border-radius: 3px;
+    padding: 0 20px;
+    text-decoration: none;
+    color: #f9f6f2;
+    height: 40px;
+    line-height: 42px;
+    margin-left: 9px;
+    cursor: pointer;
+}
+
+.game-message.game-won {
+    background: rgba(237, 194, 46, 0.5);
+    color: #f9f6f2;
+}
+
+.game-message.game-won, .game-message.game-over {
+    display: block;
+}
+
+@keyframes fade-in {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+/* 网格容器 */
+.grid-container {
+    position: absolute;
+    z-index: 1;
+}
+
+.grid-row {
+    margin-bottom: 15px;
+}
+
+.grid-row:last-child {
+    margin-bottom: 0;
+}
+
+.grid-row:after {
+    content: "";
+    display: block;
+    clear: both;
+}
+
+.grid-cell {
+    width: 106.25px;
+    height: 106.25px;
+    margin-right: 15px;
+    float: left;
+    border-radius: 3px;
+    background: rgba(238, 228, 218, 0.35);
+}
+
+.grid-cell:last-child {
+    margin-right: 0;
+}
+
+/* 方块容器 */
+.tile-container {
+    position: absolute;
+    z-index: 2;
+}
+
+/* 方块样式 */
+.tile {
+    width: 106.25px;
+    height: 106.25px;
+    line-height: 106.25px;
+    position: absolute;
+    border-radius: 3px;
+    background: #eee4da;
+    text-align: center;
+    font-weight: bold;
+    z-index: 10;
+    font-size: 55px;
+    transition: 100ms ease-in-out;
+    transition-property: transform, top, left;
+}
+
+.tile-merged {
+    z-index: 20;
+    animation: pop 200ms ease 100ms;
+    animation-fill-mode: backwards;
+}
+
+@keyframes pop {
+    0% {
+        transform: scale(0.8);
+    }
+    50% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.tile.tile-2 {
+    background: #eee4da;
+    color: #776e65;
+}
+
+.tile.tile-4 {
+    background: #ede0c8;
+    color: #776e65;
+}
+
+.tile.tile-8 {
+    background: #f2b179;
+    color: #f9f6f2;
+}
+
+.tile.tile-16 {
+    background: #f59563;
+    color: #f9f6f2;
+}
+
+.tile.tile-32 {
+    background: #f67c5f;
+    color: #f9f6f2;
+}
+
+.tile.tile-64 {
+    background: #f65e3b;
+    color: #f9f6f2;
+}
+
+.tile.tile-128 {
+    background: #edcf72;
+    color: #f9f6f2;
+    font-size: 45px;
+}
+
+.tile.tile-256 {
+    background: #edcc61;
+    color: #f9f6f2;
+    font-size: 45px;
+}
+
+.tile.tile-512 {
+    background: #edc850;
+    color: #f9f6f2;
+    font-size: 45px;
+}
+
+.tile.tile-1024 {
+    background: #edc53f;
+    color: #f9f6f2;
+    font-size: 35px;
+}
+
+.tile.tile-2048 {
+    background: #edc22e;
+    color: #f9f6f2;
+    font-size: 35px;
+}
+
+.tile.tile-super {
+    background: #3c3a32;
+    color: #f9f6f2;
+    font-size: 30px;
+}
+
+.tile.tile-new {
+    animation: appear 200ms ease 100ms;
+    animation-fill-mode: backwards;
+}
+
+@keyframes appear {
+    0% {
+        opacity: 0;
+        transform: scale(0);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* 清除浮动 */
+.clearfix:after {
+    content: "";
+    display: block;
+    clear: both;
+}
+
+/* 响应式设计 */
+@media screen and (max-width: 520px) {
+    .container {
+        width: 280px;
+        margin: 0 auto;
+        padding: 10px;
+    }
+
+    h1.title {
+        font-size: 36px;
+        margin-top: 10px;
+    }
+
+    .scores-container {
+        margin-top: 0;
+    }
+
+    .score-container, .best-container {
+        padding: 10px 15px;
+        font-size: 18px;
+        height: 38px;  /* 增加高度以容纳两行文本 */
+        margin-top: 10px;
+    }
+    
+    #score, #best-score {
+        bottom: 5px;
+        line-height: 18px;
+    }
+
+    .restart-button {
+        height: 30px;
+        line-height: 32px;
+        padding: 0 10px;
+        margin-top: 10px;
+    }
+
+    .game-container {
+        margin-top: 20px;
+        width: 280px;
+        height: 280px;
+        padding: 10px;
+    }
+
+    .grid-cell {
+        width: 57.5px;
+        height: 57.5px;
+        margin-right: 10px;
+    }
+
+    .grid-row {
+        margin-bottom: 10px;
+    }
+
+    .tile {
+        width: 57.5px;
+        height: 57.5px;
+        line-height: 57.5px;
+        font-size: 30px;
+    }
+
+    .tile.tile-128, .tile.tile-256, .tile.tile-512 {
+        font-size: 25px;
+    }
+
+    .tile.tile-1024, .tile.tile-2048 {
+        font-size: 20px;
+    }
+
+    .game-message p {
+        font-size: 30px;
+        height: 30px;
+        line-height: 30px;
+        margin-top: 130px;
+    }
+
+    .game-message .lower {
+        margin-top: 30px;
+    }
+}

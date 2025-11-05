@@ -1,0 +1,23 @@
+# Log file
+*.log
+
+# Visual Studio Code
+.vscode/
+
+# IntelliJ project files
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Node.js specific files
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json

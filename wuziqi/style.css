@@ -1,0 +1,222 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f5f5f5;
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+}
+
+.container {
+    max-width: 800px;
+    width: 100%;
+    text-align: center;
+}
+
+h1 {
+    margin: 20px 0;
+    color: #333;
+}
+
+.game-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.status {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+}
+
+.mode {
+    display: flex;
+    gap: 10px;
+}
+
+button {
+    padding: 8px 16px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+button.active {
+    background-color: #2E7D32;
+}
+
+#restart {
+    background-color: #f44336;
+}
+
+#restart:hover {
+    background-color: #d32f2f;
+}
+
+.board-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+#board {
+    display: grid;
+    grid-template-columns: repeat(14, 30px);
+    grid-template-rows: repeat(14, 30px);
+    background-color: #E7C38D;
+    border: 2px solid #8B4513;
+    position: relative;
+    gap: 0;
+    padding: 15px;
+}
+
+.cell {
+    width: 30px;
+    height: 30px;
+    position: relative;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+/* 创建更明显的交叉点 */
+.cell::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    background: 
+        linear-gradient(to right, transparent 48%, #5D4037 48%, #5D4037 52%, transparent 52%),
+        linear-gradient(to bottom, transparent 48%, #5D4037 48%, #5D4037 52%, transparent 52%);
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* 边缘单元格的特殊处理 */
+.cell.top-edge::before {
+    background: 
+        linear-gradient(to right, transparent 48%, #5D4037 48%, #5D4037 52%, transparent 52%),
+        linear-gradient(to bottom, #5D4037 0%, #5D4037 4%, transparent 4%);
+}
+
+.cell.bottom-edge::before {
+    background: 
+        linear-gradient(to right, transparent 48%, #5D4037 48%, #5D4037 52%, transparent 52%),
+        linear-gradient(to bottom, transparent 96%, #5D4037 96%, #5D4037 100%);
+}
+
+.cell.left-edge::before {
+    background: 
+        linear-gradient(to right, #5D4037 0%, #5D4037 4%, transparent 4%),
+        linear-gradient(to bottom, transparent 48%, #5D4037 48%, #5D4037 52%, transparent 52%);
+}
+
+.cell.right-edge::before {
+    background: 
+        linear-gradient(to right, transparent 96%, #5D4037 96%, #5D4037 100%),
+        linear-gradient(to bottom, transparent 48%, #5D4037 48%, #5D4037 52%, transparent 52%);
+}
+
+/* 角落单元格的特殊处理 */
+.cell.top-edge.left-edge::before {
+    background: 
+        linear-gradient(to right, #5D4037 0%, #5D4037 4%, transparent 4%),
+        linear-gradient(to bottom, #5D4037 0%, #5D4037 4%, transparent 4%);
+}
+
+.cell.top-edge.right-edge::before {
+    background: 
+        linear-gradient(to right, transparent 96%, #5D4037 96%, #5D4037 100%),
+        linear-gradient(to bottom, #5D4037 0%, #5D4037 4%, transparent 4%);
+}
+
+.cell.bottom-edge.left-edge::before {
+    background: 
+        linear-gradient(to right, #5D4037 0%, #5D4037 4%, transparent 4%),
+        linear-gradient(to bottom, transparent 96%, #5D4037 96%, #5D4037 100%);
+}
+
+.cell.bottom-edge.right-edge::before {
+    background: 
+        linear-gradient(to right, transparent 96%, #5D4037 96%, #5D4037 100%),
+        linear-gradient(to bottom, transparent 96%, #5D4037 96%, #5D4037 100%);
+}
+
+/* 棋子样式 - 精确放置在交叉点上 */
+.piece {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1;
+}
+
+.black {
+    background: radial-gradient(circle at 30% 30%, #666, #000);
+    box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+}
+
+.white {
+    background: radial-gradient(circle at 30% 30%, #fff, #ccc);
+    box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+/* 最后一步棋子的标记 */
+.last-move::after {
+    content: '';
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background-color: red;
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* 胜利的棋子高亮 */
+.winning {
+    box-shadow: 0 0 10px 2px gold;
+}
+
+@media (max-width: 600px) {
+    .game-info {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    #board {
+        grid-template-columns: repeat(15, 20px);
+        grid-template-rows: repeat(15, 20px);
+    }
+
+    .cell {
+        width: 20px;
+        height: 20px;
+    }
+
+    .piece {
+        width: 18px;
+        height: 18px;
+    }
+}

@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('DOM加载完成，初始化游戏...');
     
     // 游戏配置
-    const BOARD_SIZE = 14; // 14x14的交叉点（15x15的格子减去1）
+    const BOARD_SIZE = 15; // 15x15个交叉点（标准五子棋棋盘）
     const EMPTY = 0;
     const BLACK = 1;
     const WHITE = 2;
@@ -12,15 +12,13 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentPlayer = BLACK; // 黑子先行
     let gameOver = false;
     let lastMove = null;
-    let aiMode = false;
+    let aiMode = true; // 默认启用AI对战模式
     let winningCells = [];
 
     // DOM元素
     const boardElement = document.getElementById('board');
     const currentPlayerElement = document.getElementById('current-player');
     const restartButton = document.getElementById('restart');
-    const playerModeButton = document.getElementById('player-mode');
-    const aiModeButton = document.getElementById('ai-mode');
 
     // 检查DOM元素是否存在
     if (!boardElement) {
@@ -33,12 +31,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!restartButton) {
         console.error('找不到重新开始按钮！');
     }
-    if (!playerModeButton) {
-        console.error('找不到人人对战按钮！');
-    }
-    if (!aiModeButton) {
-        console.error('找不到人机对战按钮！');
-    }
 
     // 初始化游戏
     initGame();
@@ -49,22 +41,6 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('重新开始按钮被点击');
             e.preventDefault(); // 阻止默认行为
             restartGame();
-        });
-    }
-    
-    if (playerModeButton) {
-        playerModeButton.addEventListener('click', function(e) {
-            console.log('人人对战按钮被点击');
-            e.preventDefault(); // 阻止默认行为
-            setGameMode(false);
-        });
-    }
-    
-    if (aiModeButton) {
-        aiModeButton.addEventListener('click', function(e) {
-            console.log('人机对战按钮被点击');
-            e.preventDefault(); // 阻止默认行为
-            setGameMode(true);
         });
     }
 
@@ -105,11 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
             
-            // 确保游戏模式按钮状态正确
-            if (playerModeButton && aiModeButton) {
-                playerModeButton.classList.toggle('active', !aiMode);
-                aiModeButton.classList.toggle('active', aiMode);
-            }
+
             
             console.log('游戏初始化完成');
         } catch (error) {
@@ -293,22 +265,7 @@ document.addEventListener('DOMContentLoaded', () => {
         initGame();
     }
     
-    // 设置游戏模式
-    function setGameMode(isAiMode) {
-        console.log(`设置游戏模式: ${isAiMode ? 'AI模式' : '人人对战模式'}`);
-        aiMode = isAiMode;
-        playerModeButton.classList.toggle('active', !aiMode);
-        aiModeButton.classList.toggle('active', aiMode);
-        
-        // 重新开始游戏
-        restartGame();
-        
-        // 如果切换到AI模式且当前是白子回合，让AI落子
-        if (aiMode && currentPlayer === WHITE && !gameOver) {
-            console.log('AI模式下白子回合，AI准备落子...');
-            setTimeout(makeAiMove, 500);
-        }
-    }
+
     
     // AI落子
     function makeAiMove() {
@@ -358,9 +315,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     // 撤销模拟
                     gameBoard[row][col] = EMPTY;
                     
+                    // 考虑防守优先级：如果玩家有严重威胁，优先防守
+                    const defensePriority = getDefensePriority(row, col);
+                    const finalScore = score + defensePriority;
+                    
                     // 更新最佳位置
-                    if (score > bestScore) {
-                        bestScore = score;
+                    if (finalScore > bestScore) {
+                        bestScore = finalScore;
                         bestMove = { row, col };
                     }
                 }
@@ -375,6 +336,106 @@ document.addEventListener('DOMContentLoaded', () => {
         
         console.log(`AI选择位置: 行=${bestMove.row}, 列=${bestMove.col}, 分数=${bestScore}`);
         return bestMove;
+    }
+
+    // 获取防守优先级
+    function getDefensePriority(row, col) {
+        let priority = 0;
+        const opponent = BLACK; // 玩家是黑子
+        
+        // 检查玩家是否有即将获胜的威胁
+        if (hasImmediateThreat(opponent)) {
+            priority += 10000; // 玩家有严重威胁，优先防守
+        }
+        
+        // 检查此位置是否能够阻断玩家的连线
+        const blockingValue = evaluateBlockingEffectiveness(row, col, opponent);
+        priority += blockingValue;
+        
+        return priority;
+    }
+
+    // 检查是否有立即威胁（玩家即将获胜）
+    function hasImmediateThreat(player) {
+        // 检查玩家是否在任何位置可以立即获胜
+        for (let row = 0; row < BOARD_SIZE; row++) {
+            for (let col = 0; col < BOARD_SIZE; col++) {
+                if (gameBoard[row][col] === EMPTY) {
+                    gameBoard[row][col] = player;
+                    const isWinningMove = checkWinningMove(row, col, player);
+                    gameBoard[row][col] = EMPTY;
+                    
+                    if (isWinningMove) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    // 评估阻断效果
+    function evaluateBlockingEffectiveness(row, col, opponent) {
+        let effectiveness = 0;
+        
+        // 检查4个主要方向
+        const directions = [
+            { dr: 0, dc: 1 }, { dr: 1, dc: 0 }, { dr: 1, dc: 1 }, { dr: 1, dc: -1 }
+        ];
+        
+        for (const dir of directions) {
+            // 检查这个位置是否能够阻断对手的连线
+            const blockValue = evaluateDirectionalBlock(row, col, dir.dr, dir.dc, opponent);
+            effectiveness += blockValue;
+        }
+        
+        return effectiveness;
+    }
+
+    // 评估特定方向的阻断效果
+    function evaluateDirectionalBlock(row, col, dr, dc, opponent) {
+        let blockValue = 0;
+        
+        // 检查正向
+        let forwardCount = countOpponentInDirection(row, col, dr, dc, opponent);
+        
+        // 检查反向
+        let backwardCount = countOpponentInDirection(row, col, -dr, -dc, opponent);
+        
+        const totalOpponentCount = forwardCount + backwardCount;
+        
+        // 根据阻断的对手棋子数量评估价值
+        if (totalOpponentCount >= 3) {
+            blockValue += 3000; // 阻断3个连续棋子
+        } else if (totalOpponentCount >= 2) {
+            blockValue += 1500; // 阻断2个连续棋子
+        } else if (totalOpponentCount >= 1) {
+            blockValue += 500; // 阻断1个棋子
+        }
+        
+        return blockValue;
+    }
+
+    // 计算特定方向上的对手棋子数量
+    function countOpponentInDirection(row, col, dr, dc, opponent) {
+        let count = 0;
+        
+        let r = row + dr;
+        let c = col + dc;
+        
+        while (r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE) {
+            if (gameBoard[r][c] === opponent) {
+                count++;
+            } else if (gameBoard[r][c] !== EMPTY) {
+                break; // 遇到己方棋子
+            } else {
+                break; // 遇到空位
+            }
+            r += dr;
+            c += dc;
+        }
+        
+        return count;
     }
     
     // 检查是否是AI的第一步
@@ -418,19 +479,51 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // 评估位置分数
     function evaluatePosition(row, col, player) {
-        // 检查是否获胜
-        if (checkWinningMove(row, col, player)) {
-            return 10000; // 非常高的分数，表示获胜
-        }
-        
-        // 检查是否阻止对手获胜
         const opponent = player === BLACK ? WHITE : BLACK;
-        if (checkWinningMove(row, col, opponent)) {
-            return 5000; // 高分，表示阻止对手获胜
+        
+        // 1. 检查是否获胜（最高优先级）
+        if (checkWinningMove(row, col, player)) {
+            return 100000; // 立即获胜
         }
         
-        // 评估此位置的战略价值
-        return evaluateStrategicValue(row, col, player);
+        // 2. 检查是否阻止对手获胜（第二优先级）
+        if (checkWinningMove(row, col, opponent)) {
+            return 50000; // 阻止对手获胜
+        }
+        
+        // 3. 检查是否创造必胜局势（双活三、活四等）
+        const winningOpportunity = evaluateWinningOpportunity(row, col, player);
+        if (winningOpportunity > 40000) {
+            return winningOpportunity;
+        }
+        
+        // 4. 检查对手的威胁程度
+        const defensiveScore = evaluateDefensiveNeeds(row, col, player);
+        
+        // 5. 检查是否创造进攻机会
+        const offensiveScore = evaluateOffensiveOpportunity(row, col, player);
+        
+        // 6. 战略平衡：智能攻防决策
+        const gamePhase = getGamePhase();
+        
+        if (gamePhase === 'early') {
+            // 早期：侧重发展和布局
+            return offensiveScore * 1.2 + defensiveScore * 0.8 + evaluateStrategicValue(row, col, player);
+        } else if (gamePhase === 'mid') {
+            // 中期：平衡攻防
+            if (offensiveScore > defensiveScore + 3000) {
+                // 明显进攻机会，优先进攻
+                return offensiveScore * 1.3 + defensiveScore * 0.7;
+            } else if (defensiveScore > offensiveScore + 3000) {
+                // 明显防守需求，优先防守
+                return defensiveScore * 1.3 + offensiveScore * 0.7;
+            }
+            // 平衡状态
+            return offensiveScore + defensiveScore + evaluateStrategicValue(row, col, player);
+        } else {
+            // 后期：更注重进攻获胜
+            return offensiveScore * 1.4 + defensiveScore * 0.6;
+        }
     }
     
     // 检查是否是获胜的一步
@@ -556,6 +649,572 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (emptyBefore || emptyAfter) {
                 score += 5; // 冲二
             }
+        }
+        
+        return score;
+    }
+
+    // 评估进攻机会
+    function evaluateOffensiveOpportunity(row, col, player) {
+        let score = 0;
+        
+        // 检查是否创建活四
+        if (countPotentialFour(row, col, player) >= 1) {
+            score += 10000;
+        }
+        
+        // 检查是否创建双三（两个活三）
+        if (countDoubleThree(row, col, player) >= 2) {
+            score += 8000;
+        }
+        
+        // 检查是否创建活三
+        if (countLiveThree(row, col, player) >= 1) {
+            score += 3000;
+        }
+        
+        // 检查是否创建冲四
+        if (countPotentialFour(row, col, player, false) >= 1) {
+            score += 2000;
+        }
+        
+        // 靠近对手棋子的进攻位置加分（主动进攻）
+        score += evaluateProximityToOpponent(row, col, player) * 10;
+        
+        return score;
+    }
+
+    // 评估防守需求
+    function evaluateDefensiveNeeds(row, col, player) {
+        let score = 0;
+        const opponent = player === BLACK ? WHITE : BLACK;
+        
+        // 1. 检查对手的威胁程度
+        if (checkWinningMove(row, col, opponent)) {
+            return 50000; // 最高优先级防守
+        }
+        
+        // 2. 检查对手是否创建活四
+        if (countPotentialFour(row, col, opponent) >= 1) {
+            score += 40000;
+        }
+        
+        // 3. 检查对手是否创建双三（两个活三）
+        const doubleThreeCount = countDoubleThree(row, col, opponent);
+        if (doubleThreeCount >= 2) {
+            score += 20000;
+        } else if (doubleThreeCount === 1) {
+            score += 15000; // 单个双三也是严重威胁
+        }
+        
+        // 4. 检查对手是否创建活三
+        if (countLiveThree(row, col, opponent) >= 1) {
+            score += 12000;
+        }
+        
+        // 5. 检查对手是否创建冲四
+        if (countPotentialFour(row, col, opponent, false) >= 1) {
+            score += 10000;
+        }
+        
+        // 6. 检查对手的潜在威胁（活二、冲三等）
+        const threatScore = evaluateThreatPotential(row, col, opponent);
+        score += threatScore;
+        
+        // 7. 阻断对手连线的防守位置加分
+        const blockingScore = evaluateBlockingPosition(row, col, player);
+        score += blockingScore * 80; // 增加阻断位置的权重
+        
+        // 8. 关键防守位置额外加分（棋盘中心、交叉点等）
+        if (isKeyDefensivePosition(row, col)) {
+            score += 500;
+        }
+        
+        return score;
+    }
+
+    // 计算潜在的四连珠数量
+    function countPotentialFour(row, col, player, countLiveFour = true) {
+        const directions = [
+            { dr: 0, dc: 1 }, { dr: 1, dc: 0 }, { dr: 1, dc: 1 }, { dr: 1, dc: -1 }
+        ];
+        
+        let count = 0;
+        
+        for (const dir of directions) {
+            const pattern = getPatternInDirection(row, col, dir.dr, dir.dc, player);
+            if (pattern.totalCount === 4 && pattern.hasEmptyEnds) {
+                count++;
+            } else if (!countLiveFour && pattern.totalCount === 4) {
+                count++;
+            }
+        }
+        
+        return count;
+    }
+
+    // 计算双三数量
+    function countDoubleThree(row, col, player) {
+        const directions = [
+            { dr: 0, dc: 1 }, { dr: 1, dc: 0 }, { dr: 1, dc: 1 }, { dr: 1, dc: -1 }
+        ];
+        
+        let doubleThreeCount = 0;
+        
+        for (const dir of directions) {
+            const pattern = getPatternInDirection(row, col, dir.dr, dir.dc, player);
+            if (pattern.totalCount === 3 && pattern.hasEmptyEnds) {
+                doubleThreeCount++;
+            }
+        }
+        
+        return Math.floor(doubleThreeCount / 2);
+    }
+
+    // 计算活三数量
+    function countLiveThree(row, col, player) {
+        const directions = [
+            { dr: 0, dc: 1 }, { dr: 1, dc: 0 }, { dr: 1, dc: 1 }, { dr: 1, dc: -1 }
+        ];
+        
+        let count = 0;
+        
+        for (const dir of directions) {
+            const pattern = getPatternInDirection(row, col, dir.dr, dir.dc, player);
+            if (pattern.totalCount === 3 && pattern.hasEmptyEnds) {
+                count++;
+            }
+        }
+        
+        return count;
+    }
+
+    // 获取方向上的棋型模式
+    function getPatternInDirection(row, col, dr, dc, player) {
+        let totalCount = 1; // 当前位置
+        let hasEmptyEnds = false;
+        
+        // 正向检查
+        let r = row + dr;
+        let c = col + dc;
+        while (r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE) {
+            if (gameBoard[r][c] === player) {
+                totalCount++;
+            } else if (gameBoard[r][c] === EMPTY) {
+                hasEmptyEnds = true;
+                break;
+            } else {
+                break;
+            }
+            r += dr;
+            c += dc;
+        }
+        
+        // 反向检查
+        r = row - dr;
+        c = col - dc;
+        while (r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE) {
+            if (gameBoard[r][c] === player) {
+                totalCount++;
+            } else if (gameBoard[r][c] === EMPTY) {
+                hasEmptyEnds = true;
+                break;
+            } else {
+                break;
+            }
+            r -= dr;
+            c -= dc;
+        }
+        
+        return { totalCount, hasEmptyEnds };
+    }
+
+    // 评估靠近对手的位置价值
+    function evaluateProximityToOpponent(row, col, player) {
+        const opponent = player === BLACK ? WHITE : BLACK;
+        let proximityScore = 0;
+        
+        // 检查周围8个方向是否有对手棋子
+        for (let dr = -2; dr <= 2; dr++) {
+            for (let dc = -2; dc <= 2; dc++) {
+                if (dr === 0 && dc === 0) continue;
+                
+                const r = row + dr;
+                const c = col + dc;
+                
+                if (r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE) {
+                    if (gameBoard[r][c] === opponent) {
+                        // 距离越近，分数越高
+                        const distance = Math.abs(dr) + Math.abs(dc);
+                        proximityScore += (3 - distance) * 10;
+                    }
+                }
+            }
+        }
+        
+        return proximityScore;
+    }
+
+    // 评估阻断位置的价值
+    function evaluateBlockingPosition(row, col, player) {
+        const opponent = player === BLACK ? WHITE : BLACK;
+        let blockingScore = 0;
+        
+        // 检查4个主要方向
+        const directions = [
+            { dr: 0, dc: 1 }, { dr: 1, dc: 0 }, { dr: 1, dc: 1 }, { dr: 1, dc: -1 }
+        ];
+        
+        for (const dir of directions) {
+            // 检查正向的对手棋子
+            let opponentCount = 0;
+            let r = row + dir.dr;
+            let c = col + dir.dc;
+            
+            while (r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE) {
+                if (gameBoard[r][c] === opponent) {
+                    opponentCount++;
+                } else if (gameBoard[r][c] === EMPTY || gameBoard[r][c] === player) {
+                    break;
+                }
+                r += dir.dr;
+                c += dir.dc;
+            }
+            
+            // 检查反向的对手棋子
+            r = row - dir.dr;
+            c = col - dir.dc;
+            while (r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE) {
+                if (gameBoard[r][c] === opponent) {
+                    opponentCount++;
+                } else if (gameBoard[r][c] === EMPTY || gameBoard[r][c] === player) {
+                    break;
+                }
+                r -= dir.dr;
+                c -= dir.dc;
+            }
+            
+            // 根据阻断的对手棋子数量加分
+            if (opponentCount >= 2) {
+                blockingScore += opponentCount * 20;
+            }
+        }
+        
+        return blockingScore;
+    }
+
+    // 评估对手的潜在威胁
+    function evaluateThreatPotential(row, col, player) {
+        let threatScore = 0;
+        
+        // 检查各个方向的威胁
+        const directions = [
+            { dr: 0, dc: 1 }, { dr: 1, dc: 0 }, { dr: 1, dc: 1 }, { dr: 1, dc: -1 }
+        ];
+        
+        for (const dir of directions) {
+            // 检查正向
+            let forwardThreat = analyzeThreatInDirection(row, col, dir.dr, dir.dc, player);
+            
+            // 检查反向
+            let backwardThreat = analyzeThreatInDirection(row, col, -dir.dr, -dir.dc, player);
+            
+            threatScore += forwardThreat + backwardThreat;
+        }
+        
+        return threatScore;
+    }
+
+    // 分析特定方向的威胁
+    function analyzeThreatInDirection(row, col, dr, dc, player) {
+        let threatScore = 0;
+        let consecutiveCount = 0;
+        let emptyCount = 0;
+        
+        let r = row + dr;
+        let c = col + dc;
+        
+        // 检查连续棋子和空位
+        while (r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE) {
+            if (gameBoard[r][c] === player) {
+                consecutiveCount++;
+            } else if (gameBoard[r][c] === EMPTY) {
+                emptyCount++;
+                break;
+            } else {
+                break;
+            }
+            r += dr;
+            c += dc;
+        }
+        
+        // 根据连续棋子和空位情况评估威胁
+        if (consecutiveCount >= 1 && emptyCount >= 1) {
+            if (consecutiveCount === 2) {
+                threatScore += 800; // 活二威胁
+            } else if (consecutiveCount === 1) {
+                threatScore += 200; // 单子威胁
+            }
+        }
+        
+        return threatScore;
+    }
+
+    // 检查是否是关键防守位置
+    function isKeyDefensivePosition(row, col) {
+        // 棋盘中心区域
+        const center = BOARD_SIZE / 2;
+        const distanceFromCenter = Math.abs(row - center) + Math.abs(col - center);
+        
+        // 靠近中心的位置
+        if (distanceFromCenter <= 3) {
+            return true;
+        }
+        
+        // 对手棋子周围的交叉点
+        const opponent = currentPlayer === BLACK ? WHITE : BLACK;
+        for (let dr = -2; dr <= 2; dr++) {
+            for (let dc = -2; dc <= 2; dc++) {
+                if (dr === 0 && dc === 0) continue;
+                
+                const r = row + dr;
+                const c = col + dc;
+                
+                if (r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE) {
+                    if (gameBoard[r][c] === opponent) {
+                        // 检查是否是交叉点（在两个对手棋子之间）
+                        if (isIntersectionPoint(row, col)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        
+        return false;
+    }
+
+    // 检查是否是交叉点（在两个对手棋子之间的位置）
+    function isIntersectionPoint(row, col) {
+        let crossDirections = 0;
+        
+        const directions = [
+            { dr: 0, dc: 1 }, { dr: 1, dc: 0 }, { dr: 1, dc: 1 }, { dr: 1, dc: -1 }
+        ];
+        
+        for (const dir of directions) {
+            const hasOpponentInDirection = checkOpponentInDirection(row, col, dir.dr, dir.dc);
+            const hasOpponentInOppositeDirection = checkOpponentInDirection(row, col, -dir.dr, -dir.dc);
+            
+            if (hasOpponentInDirection && hasOpponentInOppositeDirection) {
+                crossDirections++;
+            }
+        }
+        
+        return crossDirections >= 2; // 至少有两个方向上有对手棋子
+    }
+
+    // 检查特定方向上是否有对手棋子
+    function checkOpponentInDirection(row, col, dr, dc) {
+        const opponent = currentPlayer === BLACK ? WHITE : BLACK;
+        
+        let r = row + dr;
+        let c = col + dc;
+        
+        while (r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE) {
+            if (gameBoard[r][c] === opponent) {
+                return true;
+            } else if (gameBoard[r][c] !== EMPTY) {
+                break; // 遇到己方棋子或边界
+            }
+            r += dr;
+            c += dc;
+        }
+        
+        return false;
+    }
+
+    // 评估必胜局势
+    function evaluateWinningOpportunity(row, col, player) {
+        let score = 0;
+        
+        // 检查是否创造活四
+        if (countLiveFour(row, col, player) >= 1) {
+            score += 45000; // 创造活四，接近必胜
+        }
+        
+        // 检查是否创造双活三
+        if (countDoubleLiveThree(row, col, player) >= 2) {
+            score += 43000; // 创造双活三，必胜局面
+        }
+        
+        // 检查是否创造双活二（潜在进攻模式）
+        if (countDoubleLiveTwo(row, col, player) >= 2) {
+            score += 8000; // 创造良好的进攻基础
+        }
+        
+        // 检查是否创造多重威胁
+        const multiThreatScore = evaluateMultiThreat(row, col, player);
+        score += multiThreatScore;
+        
+        return score;
+    }
+
+    // 计算活四数量
+    function countLiveFour(row, col, player) {
+        let count = 0;
+        const directions = [
+            { dr: 0, dc: 1 }, { dr: 1, dc: 0 }, { dr: 1, dc: 1 }, { dr: 1, dc: -1 }
+        ];
+        
+        for (const dir of directions) {
+            const pattern = getPatternInDirection(row, col, dir.dr, dir.dc, player);
+            if (pattern.totalCount === 4 && pattern.hasEmptyEnds) {
+                count++;
+            }
+        }
+        
+        return count;
+    }
+
+    // 计算双活三数量
+    function countDoubleLiveThree(row, col, player) {
+        let liveThreeCount = 0;
+        const directions = [
+            { dr: 0, dc: 1 }, { dr: 1, dc: 0 }, { dr: 1, dc: 1 }, { dr: 1, dc: -1 }
+        ];
+        
+        for (const dir of directions) {
+            const pattern = getPatternInDirection(row, col, dir.dr, dir.dc, player);
+            if (pattern.totalCount === 3 && pattern.hasEmptyEnds) {
+                liveThreeCount++;
+            }
+        }
+        
+        return liveThreeCount;
+    }
+
+    // 计算双活二数量
+    function countDoubleLiveTwo(row, col, player) {
+        let liveTwoCount = 0;
+        const directions = [
+            { dr: 0, dc: 1 }, { dr: 1, dc: 0 }, { dr: 1, dc: 1 }, { dr: 1, dc: -1 }
+        ];
+        
+        for (const dir of directions) {
+            const pattern = getPatternInDirection(row, col, dir.dr, dir.dc, player);
+            if (pattern.totalCount === 2 && pattern.hasEmptyEnds) {
+                liveTwoCount++;
+            }
+        }
+        
+        return liveTwoCount;
+    }
+
+    // 评估多重威胁
+    function evaluateMultiThreat(row, col, player) {
+        let score = 0;
+        
+        // 检查不同方向的威胁组合
+        const directions = [
+            { dr: 0, dc: 1 }, { dr: 1, dc: 0 }, { dr: 1, dc: 1 }, { dr: 1, dc: -1 }
+        ];
+        
+        let threatDirections = 0;
+        
+        for (const dir of directions) {
+            const threatValue = evaluateDirectionalThreat(row, col, dir.dr, dir.dc, player);
+            if (threatValue > 0) {
+                threatDirections++;
+                score += threatValue;
+            }
+        }
+        
+        // 多重威胁奖励
+        if (threatDirections >= 2) {
+            score += threatDirections * 1000;
+        }
+        
+        return score;
+    }
+
+    // 评估特定方向的威胁
+    function evaluateDirectionalThreat(row, col, dr, dc, player) {
+        let threatScore = 0;
+        
+        // 检查正向
+        let forwardThreat = analyzeThreatInDirection(row, col, dr, dc, player);
+        
+        // 检查反向
+        let backwardThreat = analyzeThreatInDirection(row, col, -dr, -dc, player);
+        
+        threatScore = forwardThreat + backwardThreat;
+        
+        // 连续威胁额外奖励
+        if (forwardThreat > 0 && backwardThreat > 0) {
+            threatScore += 500;
+        }
+        
+        return threatScore;
+    }
+
+    // 获取游戏阶段
+    function getGamePhase() {
+        let pieceCount = 0;
+        
+        for (let row = 0; row < BOARD_SIZE; row++) {
+            for (let col = 0; col < BOARD_SIZE; col++) {
+                if (gameBoard[row][col] !== EMPTY) {
+                    pieceCount++;
+                }
+            }
+        }
+        
+        if (pieceCount <= 10) {
+            return 'early'; // 早期：0-10个棋子
+        } else if (pieceCount <= 40) {
+            return 'mid';   // 中期：11-40个棋子
+        } else {
+            return 'late';   // 后期：40+个棋子
+        }
+    }
+
+    // 增强进攻机会评估
+    function evaluateOffensiveOpportunity(row, col, player) {
+        let score = 0;
+        
+        // 检查是否创建活四
+        if (countLiveFour(row, col, player) >= 1) {
+            score += 10000;
+        }
+        
+        // 检查是否创建双三（两个活三）
+        const doubleThreeCount = countDoubleThree(row, col, player);
+        if (doubleThreeCount >= 2) {
+            score += 8000;
+        } else if (doubleThreeCount === 1) {
+            score += 4000;
+        }
+        
+        // 检查是否创建活三
+        if (countLiveThree(row, col, player) >= 1) {
+            score += 3000;
+        }
+        
+        // 检查是否创建冲四
+        if (countPotentialFour(row, col, player, false) >= 1) {
+            score += 2000;
+        }
+        
+        // 靠近对手棋子的进攻位置加分（主动进攻）
+        score += evaluateProximityToOpponent(row, col, player) * 10;
+        
+        // 根据游戏阶段调整进攻权重
+        const gamePhase = getGamePhase();
+        if (gamePhase === 'early') {
+            score *= 1.1; // 早期鼓励进攻布局
+        } else if (gamePhase === 'late') {
+            score *= 1.3; // 后期更注重进攻
         }
         
         return score;

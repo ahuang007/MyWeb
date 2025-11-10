@@ -2,6 +2,7 @@
 <html lang="zh">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>功能首页</title>
   <style>
     body {
@@ -9,9 +10,14 @@
       background-color: #f4f4f4;
       text-align: center;
       padding: 50px;
+      margin: 0;
+      min-height: 100vh;
+      box-sizing: border-box;
     }
     h1 {
       color: #333;
+      font-size: 2.5rem;
+      margin-bottom: 30px;
     }
     .link-container {
       display: flex;
@@ -28,22 +34,88 @@
       text-align: center;
       border-radius: 8px;
       box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .link-box:hover {
+      transform: translateY(-5px);
+      box-shadow: 4px 4px 15px rgba(0,0,0,0.2);
     }
     .link-box a {
       text-decoration: none;
       color: #007BFF;
       font-weight: bold;
+      font-size: 1.1rem;
     }
     .link-box a:hover {
       text-decoration: underline;
     }
+    
+    /* 移动端适配 */
+    @media (max-width: 768px) {
+      body {
+        padding: 20px 15px;
+      }
+      
+      h1 {
+        font-size: 1.8rem;
+        margin-bottom: 20px;
+      }
+      
+      .link-container {
+        gap: 15px;
+        margin-top: 20px;
+      }
+      
+      .link-box {
+        width: calc(50% - 20px);
+        min-width: 140px;
+        padding: 15px;
+        margin: 5px;
+      }
+      
+      .link-box a {
+        font-size: 1rem;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      body {
+        padding: 15px 10px;
+      }
+      
+      h1 {
+        font-size: 1.5rem;
+        margin-bottom: 15px;
+      }
+      
+      .link-container {
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+      }
+      
+      .link-box {
+        width: 90%;
+        max-width: 280px;
+        padding: 12px;
+        margin: 0;
+      }
+      
+      .link-box a {
+        font-size: 0.9rem;
+      }
+    }
   </style>
 </head>
 <body>
-  <h1>欢迎来到 MyWeb 首页</h1>
+  <p>游戏列表</p> 
   <div class="link-container">
     <div class="link-box"><a href="2048/index.html">2048</a></div>
     <div class="link-box"><a href="wuziqi/index.html">五子棋</a></div>
+  </div>
+  <p>应用列表</p> 
+  <div class="link-container">
+    <div class="link-box"><a href="json2lua/index.html">json2lua</a></div>
   </div>
 </body>
 </html>

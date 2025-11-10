@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>JSON ↔ Lua Table 转换器</title>
+  <script src="https://unpkg.com/fengari-web/dist/fengari-web.js"></script>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    textarea { width: 45%; height: 300px; margin: 10px; font-family: monospace; }
+    .container { display: flex; justify-content: space-between; }
+    button { padding: 10px 20px; margin: 10px; }
+  </style>
+</head>
+<body>
+  <h2>JSON ↔ Lua Table 转换器（支持嵌套结构）</h2>
+  <div class="container">
+    <textarea id="input" placeholder="输入 JSON 或 Lua table 字符串"></textarea>
+    <textarea id="output" placeholder="输出结果" readonly></textarea>
+  </div>
+  <div>
+    <button onclick="jsonToLua()">JSON → Lua Table</button>
+    <button onclick="luaToJson()">Lua Table → JSON</button>
+  </div>
+
+  <script>
+    const { lua, lauxlib, lualib, to_luastring, to_jsstring } = fengari;
+
+    const dkjsonLua = `
+      local json = {}
+
+      function json.escape_str(s)
+        return s:gsub('[%c\\\\"]', function(c)
+          return string.format("\\\\u%04x", c:byte())
+        end)
+      end
+
+      function json.encode(val)
+        local t = type(val)
+        if t == "nil" then return "null"
+        elseif t == "boolean" then return tostring(val)
+        elseif t == "number" then return tostring(val)
+        elseif t == "string" then return '"' .. json.escape_str(val) .. '"'
+        elseif t == "table" then
+          local is_array = true
+          local max = 0
+          for k, v in pairs(val) do
+            if type(k) ~= "number" then is_array = false break end
+            if k > max then max = k end
+          end
+          local items = {}
+          if is_array then
+            for i = 1, max do
+              table.insert(items, json.encode(val[i]))
+            end
+            return "[" .. table.concat(items, ",") .. "]"
+          else
+            for k, v in pairs(val) do
+              table.insert(items, '"' .. tostring(k) .. '":' .. json.encode(v))
+            end
+            return "{" .. table.concat(items, ",") .. "}"
+          end
+        else
+          return 'null'
+        end
+      end
+
+      function json.decode(str)
+        local f, err = load("return " .. str, "json", "t", {})
+        if not f then error("解析失败: " .. err) end
+        return f()
+      end
+
+      return json
+    `;
+
+    function runLua(code, preload = '') {
+      const L = lauxlib.luaL_newstate();
+      lualib.luaL_openlibs(L);
+      lauxlib.luaL_dostring(L, to_luastring(`json = (function() ${dkjsonLua} end)()`));
+      const status = lauxlib.luaL_dostring(L, to_luastring(code));
+      if (status !== lua.LUA_OK) {
+        const err = to_jsstring(lua.lua_tostring(L, -1));
+        throw new Error(err);
+      }
+      const result = lua.lua_tojsstring(L, -1);
+      return result;
+    }
+
+    function jsonToLua() {
+      const jsonStr = document.getElementById('input').value;
+      try {
+        const luaCode = `
+          local json = json
+          local obj = json.decode([==[${jsonStr}]==])
+          function serialize(tbl, indent)
+            indent = indent or ""
+            local result = "{\\n"
+            local nextIndent = indent .. "  "
+            for k, v in pairs(tbl) do
+              local key = type(k) == "string" and '["' .. k .. '"]' or "[" .. k .. "]"
+              local value
+              if type(v) == "table" then
+                value = serialize(v, nextIndent)
+              elseif type(v) == "string" then
+                value = '"' .. v .. '"'
+              else
+                value = tostring(v)
+              end
+              result = result .. nextIndent .. key .. " = " .. value .. ",\\n"
+            end
+            return result .. indent .. "}"
+          end
+          return serialize(obj)
+        `;
+        const result = runLua(luaCode);
+        document.getElementById('output').value = result;
+      } catch (e) {
+        document.getElementById('output').value = '转换失败：' + e.message;
+      }
+    }
+
+    function luaToJson() {
+      const luaStr = document.getElementById('input').value;
+      try {
+        const luaCode = `
+          local json = json
+          local t = ${luaStr}
+          return json.encode(t)
+        `;
+        const result = runLua(luaCode);
+        document.getElementById('output').value = result;
+      } catch (e) {
+        document.getElementById('output').value = '转换失败：' + e.message;
+      }
+    }
+  </script>
+</body>
+</html>

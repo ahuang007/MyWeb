@@ -39,7 +39,17 @@ h1 {
 
 .mode {
     display: flex;
+    align-items: center;
     gap: 10px;
+}
+
+.mode-label {
+    font-size: 16px;
+    font-weight: bold;
+    color: #2E7D32;
+    padding: 8px 16px;
+    background-color: #E8F5E8;
+    border-radius: 4px;
 }
 
 button {
@@ -77,13 +87,14 @@ button.active {
 
 #board {
     display: grid;
-    grid-template-columns: repeat(14, 30px);
-    grid-template-rows: repeat(14, 30px);
+    grid-template-columns: repeat(15, 30px); /* 15个交叉点 */
+    grid-template-rows: repeat(15, 30px); /* 15个交叉点 */
     background-color: #E7C38D;
     border: 2px solid #8B4513;
     position: relative;
     gap: 0;
-    padding: 15px;
+    padding: 0;
+    box-sizing: border-box;
 }
 
 .cell {
@@ -92,77 +103,28 @@ button.active {
     position: relative;
     cursor: pointer;
     box-sizing: border-box;
+    border: none;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-/* 创建更明显的交叉点 */
-.cell::before {
-    content: '';
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    background: 
-        linear-gradient(to right, transparent 48%, #5D4037 48%, #5D4037 52%, transparent 52%),
-        linear-gradient(to bottom, transparent 48%, #5D4037 48%, #5D4037 52%, transparent 52%);
-    z-index: 0;
-    pointer-events: none;
-}
-
-/* 边缘单元格的特殊处理 */
-.cell.top-edge::before {
-    background: 
-        linear-gradient(to right, transparent 48%, #5D4037 48%, #5D4037 52%, transparent 52%),
-        linear-gradient(to bottom, #5D4037 0%, #5D4037 4%, transparent 4%);
-}
-
-.cell.bottom-edge::before {
-    background: 
-        linear-gradient(to right, transparent 48%, #5D4037 48%, #5D4037 52%, transparent 52%),
-        linear-gradient(to bottom, transparent 96%, #5D4037 96%, #5D4037 100%);
-}
-
-.cell.left-edge::before {
-    background: 
-        linear-gradient(to right, #5D4037 0%, #5D4037 4%, transparent 4%),
-        linear-gradient(to bottom, transparent 48%, #5D4037 48%, #5D4037 52%, transparent 52%);
-}
-
-.cell.right-edge::before {
-    background: 
-        linear-gradient(to right, transparent 96%, #5D4037 96%, #5D4037 100%),
-        linear-gradient(to bottom, transparent 48%, #5D4037 48%, #5D4037 52%, transparent 52%);
-}
-
-/* 角落单元格的特殊处理 */
-.cell.top-edge.left-edge::before {
-    background: 
-        linear-gradient(to right, #5D4037 0%, #5D4037 4%, transparent 4%),
-        linear-gradient(to bottom, #5D4037 0%, #5D4037 4%, transparent 4%);
-}
-
-.cell.top-edge.right-edge::before {
-    background: 
-        linear-gradient(to right, transparent 96%, #5D4037 96%, #5D4037 100%),
-        linear-gradient(to bottom, #5D4037 0%, #5D4037 4%, transparent 4%);
-}
-
-.cell.bottom-edge.left-edge::before {
-    background: 
-        linear-gradient(to right, #5D4037 0%, #5D4037 4%, transparent 4%),
-        linear-gradient(to bottom, transparent 96%, #5D4037 96%, #5D4037 100%);
-}
-
-.cell.bottom-edge.right-edge::before {
-    background: 
-        linear-gradient(to right, transparent 96%, #5D4037 96%, #5D4037 100%),
-        linear-gradient(to bottom, transparent 96%, #5D4037 96%, #5D4037 100%);
+/* 网格线背景 - 创建15条横线和竖线 */
+#board {
+    background-image: 
+        linear-gradient(to right, #8B4513 1px, transparent 1px),
+        linear-gradient(to bottom, #8B4513 1px, transparent 1px);
+    background-size: 30px 30px;
+    background-position: 15px 15px;
+    background-origin: content-box;
+    background-clip: content-box;
 }
 
 /* 棋子样式 - 精确放置在交叉点上 */
 .piece {
-    width: 26px;
-    height: 26px;
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
     position: absolute;
     top: 50%;

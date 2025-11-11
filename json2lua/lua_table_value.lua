@@ -1,0 +1,32 @@
+{
+  id = 1,
+  upload_time = 1761811383,
+  idx = 1,
+  rule_code = "f72732",
+  status = 2,
+  allow_download = true,
+  rule = {
+    rule_desc = "",
+    rule_name = "lumi03的房间",
+    rules = {},
+    role_rules = {},
+    custom_text = ""
+  },
+  author_id = 2000069,
+  ugc_info = {
+    bytes = 0,
+    ugc_type = 0,
+    privilege = 0,
+    play_mode = 35,
+    sky = 0,
+    map_size = 0,
+    author_name = "lumi03",
+    floor = 0,
+    map_data_url = "https://klbqcp-uat-ugc-cdn.gxpan.cn/ugc_map/2000069/36_2025.10.30-15.55.33_1761840183.data",
+    map_id = 0,
+    author_id = 2000069,
+    map_pic_url = "",
+    map_name = "36_2025.10.30-15.55.33_晶源研究所一追击模式V7(1).data"
+  },
+  author_name = "lumi03"
+}

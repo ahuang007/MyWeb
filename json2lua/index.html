@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <title>JSON ↔ Lua Table 转换器</title>
-  <script src="https://unpkg.com/fengari-web/dist/fengari-web.js"></script>
   <style>
     body { font-family: sans-serif; padding: 20px; }
     textarea { width: 45%; height: 300px; margin: 10px; font-family: monospace; }
@@ -23,96 +22,57 @@
   </div>
 
   <script>
-    const { lua, lauxlib, lualib, to_luastring, to_jsstring } = fengari;
-
-    const dkjsonLua = `
-      local json = {}
-
-      function json.escape_str(s)
-        return s:gsub('[%c\\\\"]', function(c)
-          return string.format("\\\\u%04x", c:byte())
-        end)
-      end
-
-      function json.encode(val)
-        local t = type(val)
-        if t == "nil" then return "null"
-        elseif t == "boolean" then return tostring(val)
-        elseif t == "number" then return tostring(val)
-        elseif t == "string" then return '"' .. json.escape_str(val) .. '"'
-        elseif t == "table" then
-          local is_array = true
-          local max = 0
-          for k, v in pairs(val) do
-            if type(k) ~= "number" then is_array = false break end
-            if k > max then max = k end
-          end
-          local items = {}
-          if is_array then
-            for i = 1, max do
-              table.insert(items, json.encode(val[i]))
-            end
-            return "[" .. table.concat(items, ",") .. "]"
-          else
-            for k, v in pairs(val) do
-              table.insert(items, '"' .. tostring(k) .. '":' .. json.encode(v))
-            end
-            return "{" .. table.concat(items, ",") .. "}"
-          end
-        else
-          return 'null'
-        end
-      end
-
-      function json.decode(str)
-        local f, err = load("return " .. str, "json", "t", {})
-        if not f then error("解析失败: " .. err) end
-        return f()
-      end
-
-      return json
-    `;
-
-    function runLua(code, preload = '') {
-      const L = lauxlib.luaL_newstate();
-      lualib.luaL_openlibs(L);
-      lauxlib.luaL_dostring(L, to_luastring(`json = (function() ${dkjsonLua} end)()`));
-      const status = lauxlib.luaL_dostring(L, to_luastring(code));
-      if (status !== lua.LUA_OK) {
-        const err = to_jsstring(lua.lua_tostring(L, -1));
-        throw new Error(err);
-      }
-      const result = lua.lua_tojsstring(L, -1);
-      return result;
-    }
-
     function jsonToLua() {
       const jsonStr = document.getElementById('input').value;
       try {
-        const luaCode = `
-          local json = json
-          local obj = json.decode([==[${jsonStr}]==])
-          function serialize(tbl, indent)
-            indent = indent or ""
-            local result = "{\\n"
-            local nextIndent = indent .. "  "
-            for k, v in pairs(tbl) do
-              local key = type(k) == "string" and '["' .. k .. '"]' or "[" .. k .. "]"
-              local value
-              if type(v) == "table" then
-                value = serialize(v, nextIndent)
-              elseif type(v) == "string" then
-                value = '"' .. v .. '"'
-              else
-                value = tostring(v)
-              end
-              result = result .. nextIndent .. key .. " = " .. value .. ",\\n"
-            end
-            return result .. indent .. "}"
-          end
-          return serialize(obj)
-        `;
-        const result = runLua(luaCode);
+        // 首先使用JavaScript解析JSON，然后转换为Lua格式
+        const obj = JSON.parse(jsonStr);
+        
+        function serializeLua(obj, indent = "") {
+          const nextIndent = indent + "  ";
+          
+          if (typeof obj === 'object' && obj !== null) {
+            if (Array.isArray(obj)) {
+              // 数组格式 - 每个元素单独一行
+              if (obj.length === 0) return "{}";
+              
+              const items = obj.map(item => {
+                const itemStr = serializeLua(item, nextIndent);
+                // 如果数组元素是对象或数组，需要换行和缩进
+                if (typeof item === 'object' && item !== null) {
+                  return "\n" + nextIndent + itemStr;
+                }
+                return itemStr;
+              });
+              
+              return "{" + items.join(", ") + "\n" + indent + "}";
+            } else {
+              // 对象格式 - 每个键值对单独一行
+              const entries = Object.entries(obj);
+              if (entries.length === 0) return "{}";
+              
+              const items = entries.map(([key, value]) => {
+                // 检查是否是有效的Lua标识符
+                const isValidLuaIdentifier = /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(key);
+                const formattedKey = isValidLuaIdentifier ? key : `["${key}"]`;
+                const valueStr = serializeLua(value, nextIndent);
+                
+                return "\n" + nextIndent + formattedKey + " = " + valueStr;
+              });
+              
+              return "{" + items.join(",") + "\n" + indent + "}";
+            }
+          } else if (typeof obj === 'string') {
+            return `"${obj}"`;
+          } else if (typeof obj === 'number' || typeof obj === 'boolean') {
+            return obj.toString();
+          } else if (obj === null) {
+            return 'nil';
+          }
+          return 'nil';
+        }
+        
+        const result = serializeLua(obj);
         document.getElementById('output').value = result;
       } catch (e) {
         document.getElementById('output').value = '转换失败：' + e.message;
@@ -122,13 +82,162 @@
     function luaToJson() {
       const luaStr = document.getElementById('input').value;
       try {
-        const luaCode = `
-          local json = json
-          local t = ${luaStr}
-          return json.encode(t)
-        `;
-        const result = runLua(luaCode);
+        // 解析Lua table字符串并转换为JSON
+        function parseLuaTable(luaStr) {
+          // 移除Lua注释和多余的空白
+          let cleanStr = luaStr.replace(/--[^\r\n]*/g, '').trim();
+          
+          // 如果是空table
+          if (cleanStr === '{}' || cleanStr === '') {
+            return {};
+          }
+          
+          // 移除外层大括号
+          if (cleanStr.startsWith('{') && cleanStr.endsWith('}')) {
+            cleanStr = cleanStr.slice(1, -1).trim();
+          }
+          
+          // 如果内容为空
+          if (!cleanStr) {
+            return {};
+          }
+          
+          // 处理对象类型的table（例如：{a = 1, b = 2}）
+          const entries = [];
+          let i = 0;
+          
+          while (i < cleanStr.length) {
+            // 跳过空白字符
+            while (i < cleanStr.length && /\s/.test(cleanStr[i])) {
+              i++;
+            }
+            
+            if (i >= cleanStr.length) break;
+            
+            // 解析键
+            let key = '';
+            let inString = false;
+            let stringChar = '';
+            
+            // 检查键是否被引号包围
+            if (cleanStr[i] === '"' || cleanStr[i] === "'") {
+              inString = true;
+              stringChar = cleanStr[i];
+              key += cleanStr[i];
+              i++;
+              
+              while (i < cleanStr.length && (inString || cleanStr[i] !== '=')) {
+                if (cleanStr[i] === stringChar && cleanStr[i-1] !== '\\') {
+                  inString = false;
+                }
+                key += cleanStr[i];
+                i++;
+              }
+            } else {
+              // 解析未引号的键（Lua标识符）
+              while (i < cleanStr.length && /[a-zA-Z0-9_]/.test(cleanStr[i])) {
+                key += cleanStr[i];
+                i++;
+              }
+            }
+            
+            // 跳过空白字符和等号
+            while (i < cleanStr.length && /\s/.test(cleanStr[i])) {
+              i++;
+            }
+            
+            if (i < cleanStr.length && cleanStr[i] === '=') {
+              i++; // 跳过等号
+            }
+            
+            // 跳过空白字符
+            while (i < cleanStr.length && /\s/.test(cleanStr[i])) {
+              i++;
+            }
+            
+            // 解析值
+            let value = '';
+            let depth = 0;
+            inString = false;
+            stringChar = '';
+            
+            while (i < cleanStr.length) {
+              const char = cleanStr[i];
+              
+              if (!inString) {
+                if (char === '"' || char === "'") {
+                  inString = true;
+                  stringChar = char;
+                } else if (char === '{') {
+                  depth++;
+                } else if (char === '}') {
+                  depth--;
+                } else if (char === ',' && depth === 0) {
+                  i++; // 跳过逗号
+                  break;
+                }
+              } else {
+                if (char === stringChar && cleanStr[i-1] !== '\\') {
+                  inString = false;
+                }
+              }
+              
+              value += char;
+              i++;
+            }
+            
+            // 解析键值对
+            if (key) {
+              entries.push([key.trim(), parseLuaValue(value.trim())]);
+            }
+          }
+          
+          // 转换为对象
+          const result = {};
+          for (const [key, value] of entries) {
+            // 如果键被引号包围，去掉引号
+            let cleanKey = key;
+            if ((key.startsWith('"') && key.endsWith('"')) || 
+                (key.startsWith("'") && key.endsWith("'"))) {
+              cleanKey = key.slice(1, -1);
+            }
+            result[cleanKey] = value;
+          }
+          
+          return result;
+        }
+        
+        function parseLuaValue(valueStr) {
+          if (valueStr === 'nil') return null;
+          if (valueStr === 'true') return true;
+          if (valueStr === 'false') return false;
+          
+          // 字符串
+          if ((valueStr.startsWith('"') && valueStr.endsWith('"')) || 
+              (valueStr.startsWith("'") && valueStr.endsWith("'"))) {
+            return valueStr.slice(1, -1);
+          }
+          
+          // 数字
+          if (!isNaN(valueStr)) {
+            return Number(valueStr);
+          }
+          
+          // 嵌套table
+          if (valueStr.startsWith('{') && valueStr.endsWith('}')) {
+            return parseLuaTable(valueStr);
+          }
+          
+          return valueStr;
+        }
+        
+        // 解析Lua table
+        const obj = parseLuaTable(luaStr);
+        
+        // 转换为格式化的JSON
+        const result = JSON.stringify(obj, null, 2);
         document.getElementById('output').value = result;
+        
       } catch (e) {
         document.getElementById('output').value = '转换失败：' + e.message;
       }

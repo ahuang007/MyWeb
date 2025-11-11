@@ -8,7 +8,6 @@
 
 ### 使用AI编程工具
 
-* ![使用 Copilot 生成网页主页](https://github.com/ahuang007/MyWeb/blob/master/copilot_web.jpg)
 * ![使用 Copilot 生成网页工具](https://github.com/ahuang007/MyWeb/blob/master/copilot_tool.jpg)
 * ![使用 CodeBuddy 生成网页游戏](https://github.com/ahuang007/MyWeb/blob/master/codebuddy.jpg)
 

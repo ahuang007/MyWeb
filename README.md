@@ -8,13 +8,13 @@
 
 ### 使用AI编程工具
 
-1. [使用 Copilot 生成网页主页](https://github.com/ahuang007/MyWeb/blob/master/copilot_web.jpg)
-2. [使用 Copilot 生成网页工具](https://github.com/ahuang007/MyWeb/blob/master/copilot_tool.jpg)
-3. [使用 CodeBuddy 生成网页游戏](https://github.com/ahuang007/MyWeb/blob/master/codebuddy.jpg)
+* ![使用 Copilot 生成网页主页](https://github.com/ahuang007/MyWeb/blob/master/copilot_web.jpg)
+* ![使用 Copilot 生成网页工具](https://github.com/ahuang007/MyWeb/blob/master/copilot_tool.jpg)
+* ![使用 CodeBuddy 生成网页游戏](https://github.com/ahuang007/MyWeb/blob/master/codebuddy.jpg)
 
 ### 部署(Deploy)
 
-1. 一台服务机器，安装docker, 安装docker-compose, 安装git
+1. 一台服务器，安装docker, 安装docker-compose, 安装git
 2. 使用git下载项目代码到本地MyWeb文件夹
 3. 修改docker-compose.yml文件，修改镜像名称和端口号和文件夹名称
 ```yaml
@@ -31,11 +31,13 @@ services:
 4. 运行docker-compose up -d 命令，启动容器
 5. 访问 http://113.44.46.69:8080 查看网页
 
+![网页首页](https://github.com/ahuang007/MyWeb/blob/master/web_index.jpg)
+
 ### 持续集成(DevOps)
 
-* 整理自己的想法和需求
-* 使用AI工具（Copilot、CodeBuddy、Cursor 等）生成代码
-* 测试与优化完善功能
-* 提交到仓库目录 git add -A / git commit -am "message"
-* 推送到远程仓库 git push
-* 发布更新最新功能 git pull
+1. 整理自己的想法和需求
+2. 使用AI工具（Copilot、CodeBuddy、Cursor 等）生成代码
+3. 测试与优化完善功能
+4. 提交到仓库目录 git add / git commit
+5. 推送到远程仓库 git push
+6. 发布更新最新功能 git pull

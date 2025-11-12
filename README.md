@@ -30,8 +30,6 @@ services:
 4. 运行docker-compose up -d 命令，启动容器
 5. 访问 http://113.44.46.69:8080 查看网页
 
-![网页首页](https://github.com/ahuang007/MyWeb/blob/master/web_index.jpg)
-
 ### 持续集成(DevOps)
 
 1. 整理自己的想法和需求

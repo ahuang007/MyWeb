@@ -259,7 +259,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // 重新渲染网格
                 this.renderGrid();
                 
-                // 添加新方块
+                // 添加新方块，延迟0.2秒（200毫秒）让玩家有足够时间观察合并效果
                 setTimeout(() => {
                     this.addRandomTile();
                     
@@ -270,7 +270,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                     
                     this.canMove = true;
-                }, 100);
+                }, 200);
             } else {
                 this.canMove = true;
             }
@@ -526,16 +526,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     tile.setAttribute('data-y', newPosition.y);
                     tile.setAttribute('data-value', newPosition.value);
                     
-                    // 应用CSS过渡动画
+                    // 应用CSS过渡动画，延迟0.2秒（200毫秒）
                     setTimeout(() => {
                         tile.style.left = (newPosition.y * 106.25 + newPosition.y * 15) + 'px';
                         tile.style.top = (newPosition.x * 106.25 + newPosition.x * 15) + 'px';
-                    }, 0);
+                    }, 200);
                 } else {
                     // 此方块已被合并或移除
                     setTimeout(() => {
                         tile.remove();
-                    }, 100);
+                    }, 200);
                 }
             });
             

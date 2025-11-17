@@ -36,41 +36,58 @@
         }
         
         .header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
+            font-size: 1.8rem;
+            margin-bottom: 8px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
         
         .header p {
-            font-size: 1.1rem;
+            font-size: 0.9rem;
             opacity: 0.9;
         }
         
         .content {
-            padding: 30px;
+            padding: 15px;
+        }
+        
+        .function-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #4facfe;
+        }
+        
+        .function-section h3 {
+            margin-bottom: 12px;
+            color: #333;
+            font-size: 1rem;
+            border-bottom: 1px solid #4facfe;
+            padding-bottom: 6px;
         }
         
         .input-section {
-            margin-bottom: 30px;
+            margin-bottom: 12px;
         }
         
         .input-group {
-            margin-bottom: 20px;
+            margin-bottom: 12px;
         }
         
         .input-group label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             font-weight: bold;
             color: #555;
+            font-size: 0.9rem;
         }
         
         .input-group input, .input-group select {
             width: 100%;
-            padding: 12px;
-            border: 2px solid #e1e5e9;
-            border-radius: 8px;
-            font-size: 16px;
+            padding: 8px;
+            border: 1px solid #e1e5e9;
+            border-radius: 6px;
+            font-size: 14px;
             transition: border-color 0.3s;
         }
         
@@ -81,16 +98,16 @@
         
         .btn-group {
             display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
+            gap: 8px;
+            margin-bottom: 12px;
         }
         
         .btn {
             flex: 1;
-            padding: 12px;
+            padding: 8px;
             border: none;
-            border-radius: 8px;
-            font-size: 16px;
+            border-radius: 6px;
+            font-size: 14px;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s;
@@ -102,14 +119,14 @@
         }
         
         .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+            transform: translateY(-1px);
+            box-shadow: 0 3px 10px rgba(79, 172, 254, 0.4);
         }
         
         .btn-secondary {
             background: #f8f9fa;
             color: #555;
-            border: 2px solid #e1e5e9;
+            border: 1px solid #e1e5e9;
         }
         
         .btn-secondary:hover {
@@ -118,32 +135,34 @@
         
         .result-section {
             background: #f8f9fa;
-            padding: 20px;
-            border-radius: 8px;
-            margin-top: 20px;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 12px;
         }
         
         .result-item {
-            margin-bottom: 15px;
-            padding: 15px;
+            margin-bottom: 10px;
+            padding: 10px;
             background: white;
-            border-radius: 8px;
-            border-left: 4px solid #4facfe;
+            border-radius: 6px;
+            border-left: 3px solid #4facfe;
         }
         
         .result-label {
             font-weight: bold;
             color: #555;
-            margin-bottom: 5px;
+            margin-bottom: 3px;
+            font-size: 0.9rem;
         }
         
         .result-value {
             color: #333;
             font-family: 'Courier New', monospace;
             background: #f8f9fa;
-            padding: 8px;
-            border-radius: 4px;
+            padding: 6px;
+            border-radius: 3px;
             word-break: break-all;
+            font-size: 0.9rem;
         }
         
         .now-btn {
@@ -164,21 +183,110 @@
             background: #218838;
         }
         
+        /* 紧凑布局样式 */
+        .compact-layout {
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        
+        .input-column, .result-column {
+            flex: 1;
+        }
+        
+        .button-column {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding-bottom: 20px;
+        }
+        
+        .button-column .btn {
+            min-width: 40px;
+            height: 35px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        .current-time-section {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 6px;
+            border-left: 3px solid #28a745;
+        }
+        
+        .current-time-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        
+        .current-time-col {
+            flex: 1;
+            text-align: center;
+        }
+        
+        .current-time-col .result-label {
+            font-size: 0.8rem;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .current-time-col .result-value {
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #333;
+            background: white;
+            padding: 6px;
+            border-radius: 4px;
+            border: 1px solid #e1e5e9;
+        }
+        
         @media (max-width: 768px) {
             .container {
-                margin: 10px;
+                margin: 8px;
             }
             
             .header h1 {
-                font-size: 2rem;
+                font-size: 1.5rem;
+            }
+            
+            .header p {
+                font-size: 0.8rem;
             }
             
             .content {
-                padding: 20px;
+                padding: 12px;
             }
             
-            .btn-group {
+            .function-section {
+                margin-bottom: 15px;
+                padding: 10px;
+            }
+            
+            .compact-layout {
                 flex-direction: column;
+                gap: 10px;
+            }
+            
+            .button-column {
+                flex-direction: row;
+                justify-content: center;
+                padding-bottom: 0;
+                gap: 8px;
+            }
+            
+            .button-column .btn {
+                flex: 1;
+                max-width: 60px;
+                height: 30px;
+                font-size: 12px;
+            }
+            
+            .current-time-row {
+                flex-direction: column;
+                gap: 10px;
             }
         }
         
@@ -199,47 +307,84 @@
     <div class="container">
         <div class="header">
             <h1>时间戳转换工具</h1>
-            <p>Unix时间戳与日期时间相互转换</p>
+            <p>简洁易用的时间戳与日期时间转换</p>
         </div>
         
         <div class="content">
-            <div class="input-section">
-                <div class="input-group">
-                    <label for="timestampInput">时间戳（秒）:</label>
-                    <input type="number" id="timestampInput" placeholder="输入Unix时间戳（秒）">
-                    <button class="now-btn" onclick="setCurrentTimestamp()">使用当前时间戳</button>
-                </div>
+            <!-- 时间戳转日期功能 - 三列布局 -->
+            <div class="function-section">
+                <h3>时间戳转日期</h3>
                 
-                <div class="input-group">
-                    <label for="dateTimeInput">日期时间:</label>
-                    <input type="datetime-local" id="dateTimeInput">
-                    <button class="now-btn" onclick="setCurrentDateTime()">使用当前时间</button>
-                </div>
-                
-                <div class="input-group">
-                    <label for="timezone">时区:</label>
-                    <select id="timezone">
-                        <option value="local">本地时间</option>
-                        <option value="utc">UTC时间</option>
-                        <option value="+08:00">UTC+8 (北京时间)</option>
-                        <option value="+00:00">UTC+0 (伦敦时间)</option>
-                        <option value="-05:00">UTC-5 (纽约时间)</option>
-                        <option value="+09:00">UTC+9 (东京时间)</option>
-                    </select>
+                <div class="compact-layout">
+                    <!-- 左边：输入框 -->
+                    <div class="input-column">
+                        <div class="input-group">
+                            <label for="timestampInput">时间戳（秒）:</label>
+                            <input type="number" id="timestampInput" placeholder="输入Unix时间戳">
+                        </div>
+                    </div>
+                    
+                    <!-- 中间：转换按钮 -->
+                    <div class="button-column">
+                        <button class="btn btn-primary" onclick="convertTimestampToDate()">→</button>
+                    </div>
+                    
+                    <!-- 右边：结果框 -->
+                    <div class="result-column">
+                        <div class="result-section" id="results1">
+                            <div class="result-item">
+                                <div class="result-label">等待输入...</div>
+                                <div class="result-value">请输入时间戳进行转换</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             
-            <div class="btn-group">
-                <button class="btn btn-primary" onclick="convertTimestampToDate()">时间戳 → 日期</button>
-                <button class="btn btn-secondary" onclick="convertDateToTimestamp()">日期 → 时间戳</button>
+            <!-- 日期转时间戳功能 - 三列布局 -->
+            <div class="function-section">
+                <h3>日期转时间戳</h3>
+                
+                <div class="compact-layout">
+                    <!-- 左边：输入框 -->
+                    <div class="input-column">
+                        <div class="input-group">
+                            <label for="dateTimeInput">日期时间:</label>
+                            <input type="datetime-local" id="dateTimeInput">
+                        </div>
+                    </div>
+                    
+                    <!-- 中间：转换按钮 -->
+                    <div class="button-column">
+                        <button class="btn btn-primary" onclick="convertDateToTimestamp()">→</button>
+                    </div>
+                    
+                    <!-- 右边：结果框 -->
+                    <div class="result-column">
+                        <div class="result-section" id="results2">
+                            <div class="result-item">
+                                <div class="result-label">等待输入...</div>
+                                <div class="result-value">请选择日期时间进行转换</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
             
-            <div class="result-section">
-                <h3>转换结果</h3>
-                <div id="results">
-                    <div class="result-item">
-                        <div class="result-label">等待输入...</div>
-                        <div class="result-value">请输入时间戳或日期时间进行转换</div>
+            <!-- 当前时间显示 - 左右并列布局 -->
+            <div class="function-section">
+                <h3>当前时间</h3>
+                
+                <div class="current-time-section">
+                    <div class="current-time-row" id="currentTimeDisplay">
+                        <div class="current-time-col">
+                            <div class="result-label">当前时间戳:</div>
+                            <div class="result-value" id="currentTimestampValue">--</div>
+                        </div>
+                        <div class="current-time-col">
+                            <div class="result-label">当前时间:</div>
+                            <div class="result-value" id="currentTimeValue">--:--:--</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -249,80 +394,43 @@
     </div>
 
     <script>
-        // 设置当前时间戳
-        function setCurrentTimestamp() {
-            const timestampInput = document.getElementById('timestampInput');
-            const currentTimestamp = Math.floor(Date.now() / 1000);
-            timestampInput.value = currentTimestamp;
-            convertTimestampToDate();
-        }
-        
-        // 设置当前日期时间
-        function setCurrentDateTime() {
-            const dateTimeInput = document.getElementById('dateTimeInput');
-            const now = new Date();
-            const year = now.getFullYear();
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const day = String(now.getDate()).padStart(2, '0');
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            
-            dateTimeInput.value = `${year}-${month}-${day}T${hours}:${minutes}`;
-            convertDateToTimestamp();
-        }
-        
         // 时间戳转换为日期
         function convertTimestampToDate() {
             const timestamp = document.getElementById('timestampInput').value;
-            const timezone = document.getElementById('timezone').value;
             
             if (!timestamp) {
-                showError('请输入时间戳');
+                // 如果输入为空，使用当前时间戳
+                const now = new Date();
+                const currentTimestamp = Math.floor(now.getTime() / 1000);
+                document.getElementById('timestampInput').value = currentTimestamp;
+                
+                const date = now;
+                const formattedDate = date.toLocaleString('zh-CN');
+                
+                const results = document.getElementById('results1');
+                results.innerHTML = `
+                    <div class="result-item">
+                        <div class="result-label">转换结果:</div>
+                        <div class="result-value">${formattedDate}</div>
+                    </div>
+                `;
                 return;
             }
             
             const timestampNum = parseInt(timestamp);
             if (isNaN(timestampNum) || timestampNum < 0) {
-                showError('请输入有效的时间戳（非负整数）');
+                showError('请输入有效的时间戳（非负整数）', 'results1');
                 return;
             }
             
-            let date;
-            if (timezone === 'local') {
-                date = new Date(timestampNum * 1000);
-            } else if (timezone === 'utc') {
-                date = new Date(timestampNum * 1000);
-            } else {
-                // 处理时区偏移
-                const offset = parseTimezoneOffset(timezone);
-                date = new Date((timestampNum + offset) * 1000);
-            }
+            const date = new Date(timestampNum * 1000);
+            const formattedDate = date.toLocaleString('zh-CN');
             
-            const results = document.getElementById('results');
-            
-            let formattedDate;
-            if (timezone === 'utc') {
-                formattedDate = date.toUTCString();
-            } else {
-                formattedDate = formatDateWithTimezone(date, timezone);
-            }
-            
+            const results = document.getElementById('results1');
             results.innerHTML = `
-                <div class="result-item">
-                    <div class="result-label">原始时间戳:</div>
-                    <div class="result-value">${timestampNum} (秒)</div>
-                </div>
-                <div class="result-item">
-                    <div class="result-label">毫秒时间戳:</div>
-                    <div class="result-value">${timestampNum * 1000} (毫秒)</div>
-                </div>
                 <div class="result-item">
                     <div class="result-label">转换结果:</div>
                     <div class="result-value">${formattedDate}</div>
-                </div>
-                <div class="result-item">
-                    <div class="result-label">ISO 8601格式:</div>
-                    <div class="result-value">${date.toISOString()}</div>
                 </div>
             `;
         }
@@ -330,112 +438,67 @@
         // 日期转换为时间戳
         function convertDateToTimestamp() {
             const dateTimeStr = document.getElementById('dateTimeInput').value;
-            const timezone = document.getElementById('timezone').value;
             
             if (!dateTimeStr) {
-                showError('请选择日期时间');
+                // 如果输入为空，使用当前时间
+                const now = new Date();
+                const formattedNow = now.toISOString().slice(0, 16);
+                document.getElementById('dateTimeInput').value = formattedNow;
+                
+                const timestamp = Math.floor(now.getTime() / 1000);
+                
+                const results = document.getElementById('results2');
+                results.innerHTML = `
+                    <div class="result-item">
+                        <div class="result-label">转换结果:</div>
+                        <div class="result-value">${timestamp} (秒)</div>
+                    </div>
+                `;
                 return;
             }
             
-            let date;
-            if (timezone === 'local') {
-                date = new Date(dateTimeStr);
-            } else if (timezone === 'utc') {
-                date = new Date(dateTimeStr + 'Z');
-            } else {
-                const offset = parseTimezoneOffset(timezone);
-                date = new Date(new Date(dateTimeStr).getTime() - offset * 60 * 1000);
-            }
+            const date = new Date(dateTimeStr);
             
             if (isNaN(date.getTime())) {
-                showError('无效的日期时间格式');
+                showError('无效的日期时间格式', 'results2');
                 return;
             }
             
-            let timestamp;
-            if (timezone === 'local') {
-                timestamp = Math.floor(date.getTime() / 1000);
-            } else if (timezone === 'utc') {
-                timestamp = Math.floor(date.getTime() / 1000);
-            } else {
-                timestamp = Math.floor(date.getTime() / 1000) - parseTimezoneOffset(timezone);
-            }
+            const timestamp = Math.floor(date.getTime() / 1000);
             
-            const results = document.getElementById('results');
-            
+            const results = document.getElementById('results2');
             results.innerHTML = `
                 <div class="result-item">
-                    <div class="result-label">原始日期时间:</div>
-                    <div class="result-value">${dateTimeStr}</div>
-                </div>
-                <div class="result-item">
-                    <div class="result-label">Unix时间戳:</div>
+                    <div class="result-label">转换结果:</div>
                     <div class="result-value">${timestamp} (秒)</div>
                 </div>
-                <div class="result-item">
-                    <div class="result-label">毫秒时间戳:</div>
-                    <div class="result-value">${timestamp * 1000} (毫秒)</div>
-                </div>
-                <div class="result-item">
-                    <div class="result-label">ISO 8601格式:</div>
-                    <div class="result-value">${new Date(timestamp * 1000).toISOString()}</div>
-                </div>
             `;
-            
-            // 更新时间戳输入框
-            document.getElementById('timestampInput').value = timestamp;
         }
         
-        // 解析时区偏移（分钟）
-        function parseTimezoneOffset(timezone) {
-            if (timezone === 'local' || timezone === 'utc') return 0;
+        // 更新当前时间显示
+        function updateCurrentTimeDisplay() {
+            const now = new Date();
+            const timestamp = Math.floor(now.getTime() / 1000);
+            const formattedDate = now.toLocaleString('zh-CN');
             
-            const match = timezone.match(/^([+-])(\d{2}):(\d{2})$/);
-            if (match) {
-                const sign = match[1] === '+' ? 1 : -1;
-                const hours = parseInt(match[2]);
-                const minutes = parseInt(match[3]);
-                return sign * (hours * 60 + minutes);
-            }
-            return 0;
-        }
-        
-        // 格式化带时区的日期
-        function formatDateWithTimezone(date, timezone) {
-            const options = {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit',
-                timeZone: timezone === 'local' ? undefined : 'UTC',
-                timeZoneName: 'short'
-            };
+            document.getElementById('currentTimestampValue').textContent = timestamp;
+            document.getElementById('currentTimeValue').textContent = formattedDate;
             
-            if (timezone !== 'local' && timezone !== 'utc') {
-                // 自定义时区偏移
-                const offset = parseTimezoneOffset(timezone);
-                const utcDate = new Date(date.getTime() + offset * 60 * 1000);
-                const timezoneStr = `UTC${timezone}`;
-                
-                return utcDate.toLocaleString('zh-CN', {
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    second: '2-digit'
-                }) + ` (${timezoneStr})`;
+            // 更新输入框的默认值
+            if (!document.getElementById('timestampInput').value) {
+                document.getElementById('timestampInput').value = timestamp;
             }
             
-            return date.toLocaleString('zh-CN', options);
+            if (!document.getElementById('dateTimeInput').value) {
+                const formattedNow = now.toISOString().slice(0, 16);
+                document.getElementById('dateTimeInput').value = formattedNow;
+            }
         }
         
         // 显示错误信息
-        function showError(message) {
-            const results = document.getElementById('results');
-            results.innerHTML = `
+        function showError(message, targetId) {
+            const targetElement = document.getElementById(targetId);
+            targetElement.innerHTML = `
                 <div class="result-item" style="border-left-color: #dc3545;">
                     <div class="result-label" style="color: #dc3545;">错误:</div>
                     <div class="result-value">${message}</div>
@@ -445,8 +508,11 @@
         
         // 页面加载时初始化
         document.addEventListener('DOMContentLoaded', function() {
-            setCurrentTimestamp();
-            setCurrentDateTime();
+            // 启动实时时间更新
+            setInterval(updateCurrentTimeDisplay, 1000);
+            
+            // 立即显示当前时间
+            updateCurrentTimeDisplay();
         });
         
         // 输入框变化时自动转换
@@ -462,16 +528,6 @@
             }
         });
         
-        document.getElementById('timezone').addEventListener('change', function() {
-            const timestamp = document.getElementById('timestampInput').value;
-            const dateTime = document.getElementById('dateTimeInput').value;
-            
-            if (timestamp) {
-                convertTimestampToDate();
-            } else if (dateTime) {
-                convertDateToTimestamp();
-            }
-        });
     </script>
 </body>
 </html>

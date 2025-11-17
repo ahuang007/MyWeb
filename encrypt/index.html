@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>加密工具</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 15px;
+        }
+        
+        .function-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #4facfe;
+        }
+        
+        .function-section h3 {
+            margin-bottom: 12px;
+            color: #333;
+            font-size: 1rem;
+            border-bottom: 1px solid #4facfe;
+            padding-bottom: 6px;
+        }
+        
+        .input-group {
+            margin-bottom: 12px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+            color: #555;
+            font-size: 0.9rem;
+        }
+        
+        .input-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #e1e5e9;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+            resize: vertical;
+            min-height: 80px;
+            transition: border-color 0.3s;
+        }
+        
+        .input-group textarea:focus {
+            outline: none;
+            border-color: #4facfe;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 10px rgba(79, 172, 254, 0.4);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 10px rgba(40, 167, 69, 0.4);
+        }
+        
+        .result-section {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 12px;
+        }
+        
+        .result-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            background: white;
+            border-radius: 6px;
+            border-left: 3px solid #4facfe;
+        }
+        
+        .result-label {
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 3px;
+            font-size: 0.9rem;
+        }
+        
+        .result-value {
+            color: #333;
+            font-family: 'Courier New', monospace;
+            background: #f8f9fa;
+            padding: 6px;
+            border-radius: 3px;
+            word-break: break-all;
+            font-size: 0.9rem;
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #4facfe;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            .container {
+                margin: 8px;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .header p {
+                font-size: 0.8rem;
+            }
+            
+            .content {
+                padding: 12px;
+            }
+            
+            .function-section {
+                margin-bottom: 15px;
+                padding: 10px;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>加密工具</h1>
+            <p>支持Base64加解密和MD5加密</p>
+        </div>
+        
+        <div class="content">
+            <!-- Base64加解密功能 -->
+            <div class="function-section">
+                <h3>Base64加解密</h3>
+                
+                <div class="input-group">
+                    <label for="base64Input">输入文本:</label>
+                    <textarea id="base64Input" placeholder="请输入要加解密的文本"></textarea>
+                </div>
+                
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="encodeBase64()">Base64编码</button>
+                    <button class="btn btn-success" onclick="decodeBase64()">Base64解码</button>
+                </div>
+                
+                <div class="result-section" id="base64Result">
+                    <div class="result-item">
+                        <div class="result-label">等待输入...</div>
+                        <div class="result-value">请输入文本进行加解密</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- MD5加密功能 -->
+            <div class="function-section">
+                <h3>MD5加密</h3>
+                
+                <div class="input-group">
+                    <label for="md5Input">输入文本:</label>
+                    <textarea id="md5Input" placeholder="请输入要加密的文本"></textarea>
+                </div>
+                
+                <button class="btn btn-primary" onclick="calculateMD5()">MD5加密</button>
+                
+                <div class="result-section" id="md5Result">
+                    <div class="result-item">
+                        <div class="result-label">等待输入...</div>
+                        <div class="result-value">请输入文本进行MD5加密</div>
+                    </div>
+                </div>
+            </div>
+            
+            <a href="../index.html" class="back-link">← 返回首页</a>
+        </div>
+    </div>
+
+    <script>
+        // Base64编码
+        function encodeBase64() {
+            const input = document.getElementById('base64Input').value;
+            
+            if (!input.trim()) {
+                showError('请输入要编码的文本', 'base64Result');
+                return;
+            }
+            
+            try {
+                const encoded = btoa(unescape(encodeURIComponent(input)));
+                
+                const result = document.getElementById('base64Result');
+                result.innerHTML = `
+                    <div class="result-item">
+                        <div class="result-label">编码结果:</div>
+                        <div class="result-value">${encoded}</div>
+                    </div>
+                `;
+            } catch (error) {
+                showError('编码失败：' + error.message, 'base64Result');
+            }
+        }
+        
+        // Base64解码
+        function decodeBase64() {
+            const input = document.getElementById('base64Input').value;
+            
+            if (!input.trim()) {
+                showError('请输入要解码的Base64文本', 'base64Result');
+                return;
+            }
+            
+            try {
+                // 清理可能的Base64格式问题
+                const cleanedInput = input.replace(/[^A-Za-z0-9+/=]/g, '');
+                const decoded = decodeURIComponent(escape(atob(cleanedInput)));
+                
+                const result = document.getElementById('base64Result');
+                result.innerHTML = `
+                    <div class="result-item">
+                        <div class="result-label">解码结果:</div>
+                        <div class="result-value">${decoded}</div>
+                    </div>
+                `;
+            } catch (error) {
+                showError('解码失败：无效的Base64格式', 'base64Result');
+            }
+        }
+        
+        // MD5加密
+        function calculateMD5() {
+            const input = document.getElementById('md5Input').value;
+            
+            if (!input.trim()) {
+                showError('请输入要加密的文本', 'md5Result');
+                return;
+            }
+            
+            try {
+                const md5Hash = CryptoJS.MD5(input).toString();
+                
+                const result = document.getElementById('md5Result');
+                result.innerHTML = `
+                    <div class="result-item">
+                        <div class="result-label">MD5哈希值:</div>
+                        <div class="result-value">${md5Hash}</div>
+                    </div>
+                `;
+            } catch (error) {
+                showError('MD5加密失败：' + error.message, 'md5Result');
+            }
+        }
+        
+        // 显示错误信息
+        function showError(message, targetId) {
+            const targetElement = document.getElementById(targetId);
+            targetElement.innerHTML = `
+                <div class="result-item" style="border-left-color: #dc3545;">
+                    <div class="result-label" style="color: #dc3545;">错误:</div>
+                    <div class="result-value">${message}</div>
+                </div>
+            `;
+        }
+        
+        // 输入框实时响应
+        document.getElementById('base64Input').addEventListener('input', function() {
+            if (this.value.trim()) {
+                // 可以根据输入内容自动判断是编码还是解码
+                const isBase64 = /^[A-Za-z0-9+/]*={0,2}$/.test(this.value.trim());
+                if (isBase64 && this.value.trim().length % 4 === 0) {
+                    decodeBase64();
+                } else {
+                    encodeBase64();
+                }
+            }
+        });
+        
+        document.getElementById('md5Input').addEventListener('input', function() {
+            if (this.value.trim()) {
+                calculateMD5();
+            }
+        });
+        
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('加密工具已加载');
+        });
+    </script>
+</body>
+</html>

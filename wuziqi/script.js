@@ -59,33 +59,117 @@ document.addEventListener('DOMContentLoaded', () => {
             // 更新显示
             updateCurrentPlayerDisplay();
 
-            // 创建棋盘格子
-            for (let row = 0; row < BOARD_SIZE; row++) {
-                for (let col = 0; col < BOARD_SIZE; col++) {
-                    const cell = document.createElement('div');
-                    cell.className = 'cell';
-
-                    // 添加边缘类，用于正确显示网格线
-                    if (row === 0) cell.classList.add('top-edge');
-                    if (row === BOARD_SIZE - 1) cell.classList.add('bottom-edge');
-                    if (col === 0) cell.classList.add('left-edge');
-                    if (col === BOARD_SIZE - 1) cell.classList.add('right-edge');
-
-                    cell.dataset.row = row;
-                    cell.dataset.col = col;
-                    cell.addEventListener('click', function(e) {
-                        console.log(`单元格点击: 行=${row}, 列=${col}`);
-                        handleCellClick(e);
-                    });
-                    boardElement.appendChild(cell);
-                }
-            }
+            // 创建棋盘网格线和星位点
+            createBoardGrid();
             
-
+            // 创建棋盘可点击区域（覆盖整个棋盘）
+            createBoardOverlay();
             
             console.log('游戏初始化完成');
         } catch (error) {
             console.error('初始化游戏时出错:', error);
+        }
+    }
+    
+    // 创建棋盘网格线
+    function createBoardGrid() {
+        const boardSize = BOARD_SIZE;
+        const boardWidth = boardElement.clientWidth;
+        const boardHeight = boardElement.clientHeight;
+        const cellSize = boardWidth / (boardSize - 1);
+        
+        // 创建水平线
+        for (let i = 0; i < boardSize; i++) {
+            const line = document.createElement('div');
+            line.className = 'grid-line horizontal';
+            line.style.top = (i * cellSize) + 'px';
+            boardElement.appendChild(line);
+        }
+        
+        // 创建垂直线
+        for (let i = 0; i < boardSize; i++) {
+            const line = document.createElement('div');
+            line.className = 'grid-line vertical';
+            line.style.left = (i * cellSize) + 'px';
+            boardElement.appendChild(line);
+        }
+        
+        // 创建星位点（标准五子棋星位点）
+        const starPoints = [
+            { x: 3, y: 3 }, { x: 3, y: 7 }, { x: 3, y: 11 },
+            { x: 7, y: 3 }, { x: 7, y: 7 }, { x: 7, y: 11 },
+            { x: 11, y: 3 }, { x: 11, y: 7 }, { x: 11, y: 11 }
+        ];
+        
+        starPoints.forEach(point => {
+            const star = document.createElement('div');
+            star.className = 'star-point';
+            star.style.left = (point.x * cellSize) + 'px';
+            star.style.top = (point.y * cellSize) + 'px';
+            boardElement.appendChild(star);
+        });
+    }
+    
+    // 创建棋盘可点击覆盖层
+    function createBoardOverlay() {
+        const boardSize = BOARD_SIZE;
+        const boardWidth = boardElement.clientWidth;
+        const boardHeight = boardElement.clientHeight;
+        const cellSize = boardWidth / (boardSize - 1);
+        
+        // 创建透明的覆盖层用于点击检测
+        const overlay = document.createElement('div');
+        overlay.className = 'board-overlay';
+        overlay.style.position = 'absolute';
+        overlay.style.top = '0';
+        overlay.style.left = '0';
+        overlay.style.width = '100%';
+        overlay.style.height = '100%';
+        overlay.style.cursor = 'pointer';
+        
+        overlay.addEventListener('click', function(e) {
+            const rect = boardElement.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            // 计算点击的交叉点坐标
+            const col = Math.round(x / cellSize);
+            const row = Math.round(y / cellSize);
+            
+            console.log(`点击坐标: x=${x}, y=${y}, 行=${row}, 列=${col}`);
+            
+            // 检查坐标是否在有效范围内
+            if (row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE) {
+                handleBoardClick(row, col);
+            }
+        });
+        
+        boardElement.appendChild(overlay);
+    }
+    
+    // 处理棋盘点击事件
+    function handleBoardClick(row, col) {
+        console.log(`棋盘点击: 行=${row}, 列=${col}`);
+        
+        if (gameOver) {
+            console.log('游戏已结束，忽略点击');
+            return;
+        }
+        
+        // 检查是否可以在此位置落子
+        if (gameBoard[row][col] !== EMPTY) {
+            console.log('该位置已有棋子，忽略点击');
+            return;
+        }
+        
+        // 落子
+        console.log(`玩家落子: 行=${row}, 列=${col}`);
+        placePiece(row, col);
+        
+        // 如果游戏没有结束且是AI模式，让AI落子
+        if (!gameOver && aiMode && currentPlayer === WHITE) {
+            console.log('AI模式下轮到AI落子');
+            setTimeout(makeAiMove, 500); // 延迟500ms，让玩家看清自己的落子
         }
     }
 
@@ -136,20 +220,30 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log(`放置${currentPlayer === BLACK ? '黑' : '白'}子在 行=${row}, 列=${col}`);
         gameBoard[row][col] = currentPlayer;
         
-        // 更新上一步落子位置
+        // 计算棋子位置
+        const boardSize = BOARD_SIZE;
+        const boardWidth = boardElement.clientWidth;
+        const cellSize = boardWidth / (boardSize - 1);
+        const left = col * cellSize;
+        const top = row * cellSize;
+        
+        // 移除上一步落子的标记
         if (lastMove) {
-            const lastCell = document.querySelector(`[data-row="${lastMove.row}"][data-col="${lastMove.col}"]`);
-            const lastPiece = lastCell.querySelector('.piece');
+            const lastPiece = document.querySelector('.piece.last-move');
             if (lastPiece) {
                 lastPiece.classList.remove('last-move');
             }
         }
         
         // 创建棋子元素
-        const cell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
         const piece = document.createElement('div');
         piece.className = `piece ${currentPlayer === BLACK ? 'black' : 'white'} last-move`;
-        cell.appendChild(piece);
+        piece.style.position = 'absolute';
+        piece.style.left = left + 'px';
+        piece.style.top = top + 'px';
+        piece.style.transform = 'translate(-50%, -50%)';
+        
+        boardElement.appendChild(piece);
         
         // 记录最后一步
         lastMove = { row, col };
@@ -251,13 +345,34 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // 高亮获胜的棋子
     function highlightWinningCells() {
-        for (const cell of winningCells) {
-            const cellElement = document.querySelector(`[data-row="${cell.row}"][data-col="${cell.col}"]`);
-            const pieceElement = cellElement.querySelector('.piece');
-            if (pieceElement) {
-                pieceElement.classList.add('winning');
+        // 获胜棋子会自动高亮，因为它们在DOM中都有'winning'类
+        // 我们只需要确保样式正确应用
+        const pieces = document.querySelectorAll('.piece');
+        pieces.forEach(piece => {
+            piece.classList.remove('winning');
+        });
+        
+        // 给获胜的棋子添加高亮样式
+        setTimeout(() => {
+            for (const cell of winningCells) {
+                const boardWidth = boardElement.clientWidth;
+                const cellSize = boardWidth / (BOARD_SIZE - 1);
+                const left = cell.col * cellSize;
+                const top = cell.row * cellSize;
+                
+                // 找到对应的棋子
+                const pieces = document.querySelectorAll('.piece');
+                pieces.forEach(piece => {
+                    const style = getComputedStyle(piece);
+                    const pieceLeft = parseInt(style.left);
+                    const pieceTop = parseInt(style.top);
+                    
+                    if (pieceLeft === left && pieceTop === top) {
+                        piece.classList.add('winning');
+                    }
+                });
             }
-        }
+        }, 100);
     }
     
     // 重新开始游戏

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>围棋游戏</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .back-link {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            color: #4facfe;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 16px;
+            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 8px;
+            border: 2px solid #4facfe;
+            transition: all 0.3s;
+        }
+        
+        .back-link:hover {
+            background: #4facfe;
+            color: white;
+            text-decoration: none;
+        }
+        
+        @media (max-width: 768px) {
+            .back-link {
+                top: 10px;
+                left: 10px;
+                font-size: 14px;
+                padding: 8px 12px;
+            }
+            
+            body {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="../index.html" class="back-link">← 返回首页</a>
+    <div class="container">
+        <h1>围棋</h1>
+
+        <div class="game-info">
+            <div class="status">当前玩家: <span id="current-player">黑子</span></div>
+            <div class="score">
+                <span class="black-score">黑方: <span id="black-captures">0</span>子</span>
+                <span class="white-score">白方: <span id="white-captures">0</span>子</span>
+            </div>
+            <div class="controls">
+                <button id="restart">重新开始</button>
+                <button id="pass">放弃一手</button>
+                <button id="resign">认输</button>
+            </div>
+        </div>
+
+        <div class="board-container">
+            <div id="board"></div>
+        </div>
+        
+        <div class="rules">
+            <h3>围棋规则</h3>
+            <ul>
+                <li>黑子先行，轮流落子</li>
+                <li>棋子放在交叉点上</li>
+                <li>气尽则死，提走对方棋子</li>
+                <li>禁着点：不能自杀，不能全局同形</li>
+                <li>终局：双方连续放弃时结束</li>
+            </ul>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

@@ -8,8 +8,9 @@
 
 ### 使用AI编程工具
 
-* ![使用 Copilot 生成网页工具](https://github.com/ahuang007/MyWeb/blob/master/copilot_tool.jpg)
-* ![使用 CodeBuddy 生成网页游戏](https://github.com/ahuang007/MyWeb/blob/master/codebuddy.jpg)
+* ![使用 Copilot 生成工具](https://github.com/ahuang007/MyWeb/blob/master/copilot_tool.jpg)
+* ![使用 CodeBuddy 生成游戏](https://github.com/ahuang007/MyWeb/blob/master/codebuddy.jpg)
+* ![使用 codeBuddy 生成水印功能](https://github.com/ahuang007/MyWeb/blob/master/watermask.mp4)
 
 ### 部署(Deploy)
 
@@ -30,13 +31,10 @@ services:
 4. 运行docker-compose up -d 命令，启动容器
 5. 访问 http://113.44.46.69:8080 查看网页
 
-![网页首页](https://github.com/ahuang007/MyWeb/blob/master/web_index.jpg)
-
 ### 持续集成(DevOps)
 
 1. 整理自己的想法和需求
 2. 使用AI工具（Copilot、CodeBuddy、Cursor 等）生成代码
 3. 测试与优化完善功能
-4. 提交到仓库目录 git add / git commit
-5. 推送到远程仓库 git push
-6. 发布更新最新功能 git pull
+4. 提交到仓库目录 git add / git commit / git push
+5. 发布更新最新功能 git pull

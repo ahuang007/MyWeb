@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图片加水印工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 20px;
+        }
+        
+        .upload-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #4facfe;
+        }
+        
+        .upload-section h3 {
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 1.1rem;
+        }
+        
+        .upload-area {
+            border: 2px dashed #4facfe;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #fafafa;
+        }
+        
+        .upload-area:hover {
+            border-color: #00f2fe;
+            background: #f0f8ff;
+        }
+        
+        .upload-area.dragover {
+            border-color: #28a745;
+            background: #f0fff4;
+        }
+        
+        .upload-icon {
+            font-size: 3rem;
+            color: #4facfe;
+            margin-bottom: 15px;
+        }
+        
+        .upload-text {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .upload-hint {
+            font-size: 0.9rem;
+            color: #999;
+        }
+        
+        #fileInput {
+            display: none;
+        }
+        
+        .watermark-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #4facfe;
+        }
+        
+        .watermark-section h3 {
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 1.1rem;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        .form-group input[type="text"],
+        .form-group input[type="number"],
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #e1e5e9;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #4facfe;
+        }
+        
+        .form-group input[type="range"] {
+            width: 100%;
+            margin: 10px 0;
+        }
+        
+        .range-value {
+            text-align: center;
+            color: #4facfe;
+            font-weight: bold;
+        }
+        
+        .color-picker-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .color-picker {
+            width: 60px;
+            height: 40px;
+            border: 1px solid #e1e5e9;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        
+        .color-value {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #e1e5e9;
+            border-radius: 6px;
+            font-family: monospace;
+        }
+        
+        .preview-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #4facfe;
+        }
+        
+        .preview-section h3 {
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 1.1rem;
+        }
+        
+        .preview-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .preview-item {
+            text-align: center;
+        }
+        
+        .preview-item h4 {
+            margin-bottom: 10px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .preview-canvas {
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
+            max-width: 100%;
+            height: auto;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 30px 0;
+        }
+        
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(108, 117, 125, 0.4);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .message {
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+        
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+        
+        .message.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border-left: 4px solid #17a2b8;
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #4facfe;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .content {
+                padding: 15px;
+            }
+            
+            .upload-area {
+                padding: 30px 20px;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+            }
+            
+            .preview-container {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>图片加水印工具</h1>
+            <p>为您的图片添加自定义水印，支持文字和图片水印</p>
+        </div>
+        
+        <div class="content">
+            <!-- 文件上传区域 -->
+            <div class="upload-section">
+                <h3>📁 选择图片</h3>
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📷</div>
+                    <div class="upload-text">点击选择图片或拖拽到此处</div>
+                    <div class="upload-hint">支持 JPG、PNG、GIF 格式，文件大小不超过 10MB</div>
+                    <input type="file" id="fileInput" accept="image/*" />
+                </div>
+            </div>
+            
+            <!-- 水印设置区域 -->
+            <div class="watermark-section">
+                <h3>⚙️ 水印设置</h3>
+                
+                <div class="form-group">
+                    <label for="watermarkText">水印文字:</label>
+                    <input type="text" id="watermarkText" value="henry publish" placeholder="请输入水印文字" />
+                </div>
+                
+                <div class="form-group">
+                    <label for="fontSize">字体大小:</label>
+                    <input type="range" id="fontSize" min="12" max="72" value="24" />
+                    <div class="range-value"><span id="fontSizeValue">24</span>px</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="rotation">旋转角度:</label>
+                    <input type="range" id="rotation" min="-180" max="180" value="-30" />
+                    <div class="range-value"><span id="rotationValue">-30</span>°</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="opacity">透明度:</label>
+                    <input type="range" id="opacity" min="0" max="100" value="30" />
+                    <div class="range-value"><span id="opacityValue">30</span>%</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="watermarkColor">水印颜色:</label>
+                    <div class="color-picker-wrapper">
+                        <input type="color" id="watermarkColor" class="color-picker" value="#ffffff" />
+                        <input type="text" id="colorValue" class="color-value" value="#ffffff" />
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="position">水印位置:</label>
+                    <select id="position">
+                        <option value="center">居中</option>
+                        <option value="top-left">左上角</option>
+                        <option value="top-right">右上角</option>
+                        <option value="bottom-left">左下角</option>
+                        <option value="bottom-right">右下角</option>
+                        <option value="repeat" selected>平铺</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="fontFamily">字体样式:</label>
+                    <select id="fontFamily">
+                        <option value="Arial">Arial</option>
+                        <option value="Times New Roman">Times New Roman</option>
+                        <option value="Courier New">Courier New</option>
+                        <option value="Georgia">Georgia</option>
+                        <option value="Verdana">Verdana</option>
+                        <option value="Comic Sans MS">Comic Sans MS</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- 预览区域 -->
+            <div class="preview-section" id="previewSection" style="display: none;">
+                <h3>👁️ 预览效果</h3>
+                <div class="preview-container">
+                    <div class="preview-item">
+                        <h4>原始图片</h4>
+                        <canvas id="originalCanvas" class="preview-canvas"></canvas>
+                    </div>
+                    <div class="preview-item">
+                        <h4>水印效果</h4>
+                        <canvas id="watermarkedCanvas" class="preview-canvas"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 操作按钮 -->
+            <div class="btn-group">
+                <button class="btn btn-primary" id="applyWatermark" disabled>应用水印</button>
+                <button class="btn btn-success" id="downloadImage" disabled>下载图片</button>
+                <button class="btn btn-secondary" id="resetImage">重置</button>
+            </div>
+            
+            <!-- 消息提示区域 -->
+            <div id="messageArea"></div>
+            
+            <a href="../index.html" class="back-link">← 返回首页</a>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

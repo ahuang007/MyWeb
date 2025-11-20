@@ -10,7 +10,7 @@
 
 * ![使用 Copilot 生成工具](https://github.com/ahuang007/MyWeb/blob/master/copilot_tool.jpg)
 * ![使用 CodeBuddy 生成游戏](https://github.com/ahuang007/MyWeb/blob/master/codebuddy.jpg)
-* ![使用 codeBuddy 生成水印功能](https://github.com/ahuang007/MyWeb/blob/master/watermask.mp4)
+* ![使用 codeBuddy 生成水印功能](https://www.bilibili.com/video/BV1RzywBzE5t/)
 
 ### 部署(Deploy)
 

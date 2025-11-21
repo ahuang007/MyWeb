@@ -8,9 +8,9 @@
 
 ### 使用AI编程工具
 
-* ![使用 Copilot 生成工具](https://github.com/ahuang007/MyWeb/blob/master/copilot_tool.jpg)
-* ![使用 CodeBuddy 生成游戏](https://github.com/ahuang007/MyWeb/blob/master/codebuddy.jpg)
-* [使用 codeBuddy 生成水印功能](https://www.bilibili.com/video/BV1RzywBzE5t/)
+* [Copilot](https://copilot.microsoft.com/)
+* [CodeBuddy](https://copilot.tencent.com/)
+* [使用 codeBuddy 生成水印功能视频](https://www.bilibili.com/video/BV1RzywBzE5t/)
 
 ### 部署(Deploy)
 

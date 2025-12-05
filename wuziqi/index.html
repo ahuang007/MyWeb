@@ -42,6 +42,106 @@
             text-decoration: none;
         }
         
+        /* 开局选择界面样式 */
+        .game-setup {
+            text-align: center;
+            padding: 40px 20px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            margin: 20px auto;
+            max-width: 500px;
+        }
+        
+        .game-setup h2 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 1.8rem;
+            text-shadow: none;
+        }
+        
+        .setup-options {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .setup-btn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            padding: 25px 20px;
+            min-width: 150px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 25px rgba(79, 172, 254, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .setup-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(79, 172, 254, 0.4);
+        }
+        
+        .btn-icon {
+            font-size: 2rem;
+        }
+        
+        .btn-text {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        
+        .btn-desc {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        /* 游戏区域样式 */
+        .game-area {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* 游戏信息区域增强 */
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .game-info button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .game-info button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
         @media (max-width: 768px) {
             .back-link {
                 top: 10px;
@@ -53,6 +153,30 @@
             body {
                 padding: 10px;
             }
+            
+            .game-setup {
+                padding: 30px 15px;
+                margin: 10px;
+            }
+            
+            .game-setup h2 {
+                font-size: 1.5rem;
+            }
+            
+            .setup-options {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .setup-btn {
+                min-width: 200px;
+                padding: 20px 15px;
+            }
+            
+            .game-info {
+                justify-content: center;
+                text-align: center;
+            }
         }
     </style>
 </head>
@@ -61,16 +185,37 @@
     <div class="container">
         <h1>五子棋</h1>
 
-        <div class="game-info">
-            <div class="status">当前玩家: <span id="current-player">黑子</span></div>
-            <div class="mode">
-                <span class="mode-label">AI对战模式</span>
+        <!-- 开局选择界面 -->
+        <div id="game-setup" class="game-setup">
+            <h2>选择开局模式</h2>
+            <div class="setup-options">
+                <button id="humanFirst" class="setup-btn">
+                    <span class="btn-icon">♟️</span>
+                    <span class="btn-text">人先手</span>
+                    <span class="btn-desc">你执黑子先行</span>
+                </button>
+                <button id="aiFirst" class="setup-btn">
+                    <span class="btn-icon">🤖</span>
+                    <span class="btn-text">AI先手</span>
+                    <span class="btn-desc">AI执黑子先行</span>
+                </button>
             </div>
-            <button id="restart">重新开始</button>
         </div>
 
-        <div class="board-container">
-            <div id="board"></div>
+        <!-- 游戏界面 -->
+        <div id="game-area" class="game-area" style="display: none;">
+            <div class="game-info">
+                <div class="status">当前玩家: <span id="current-player">黑子</span></div>
+                <div class="mode">
+                    <span class="mode-label">AI对战模式</span>
+                </div>
+                <button id="restart">重新开始</button>
+                <button id="change-setup">修改开局</button>
+            </div>
+
+            <div class="board-container">
+                <div id="board"></div>
+            </div>
         </div>
     </div>
 

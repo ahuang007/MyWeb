@@ -14,11 +14,34 @@ document.addEventListener('DOMContentLoaded', () => {
     let lastMove = null;
     let aiMode = true; // 默认启用AI对战模式
     let winningCells = [];
+    
+    // 先手选择相关状态
+    let gameStarted = false; // 游戏是否已开始（已选择先手）
+    let aiFirst = false; // AI是否先手
 
     // DOM元素
     const boardElement = document.getElementById('board');
     const currentPlayerElement = document.getElementById('current-player');
     const restartButton = document.getElementById('restart');
+    
+    // 开局选择相关DOM元素
+    const gameSetupElement = document.getElementById('game-setup');
+    const gameAreaElement = document.getElementById('game-area');
+    const humanFirstButton = document.getElementById('humanFirst');
+    const aiFirstButton = document.getElementById('aiFirst');
+    const changeSetupButton = document.getElementById('change-setup');
+
+    // 检查DOM元素是否存在
+    if (!boardElement) {
+        console.error('找不到棋盘元素！');
+        return;
+    }
+    if (!currentPlayerElement) {
+        console.error('找不到当前玩家显示元素！');
+    }
+    if (!restartButton) {
+        console.error('找不到重新开始按钮！');
+    }
 
     // 检查DOM元素是否存在
     if (!boardElement) {
@@ -33,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 初始化游戏
-    initGame();
+    initGameSetup();
 
     // 事件监听
     if (restartButton) {
@@ -44,17 +67,109 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 初始化游戏
-    function initGame() {
-        console.log('初始化游戏...');
+    // 开局选择事件监听
+    if (humanFirstButton) {
+        humanFirstButton.addEventListener('click', function(e) {
+            console.log('选择人先手');
+            startGame(false); // 人先手
+        });
+    }
+    
+    if (aiFirstButton) {
+        aiFirstButton.addEventListener('click', function(e) {
+            console.log('选择AI先手');
+            startGame(true); // AI先手
+        });
+    }
+    
+    if (changeSetupButton) {
+        changeSetupButton.addEventListener('click', function(e) {
+            console.log('修改开局设置');
+            e.preventDefault();
+            backToSetup();
+        });
+    }
+
+    // 初始化开局设置界面
+    function initGameSetup() {
+        console.log('初始化开局设置界面...');
         try {
-            // 清空棋盘
-            boardElement.innerHTML = '';
+            // 重置游戏状态
             gameBoard = Array(BOARD_SIZE).fill().map(() => Array(BOARD_SIZE).fill(EMPTY));
             currentPlayer = BLACK;
             gameOver = false;
             lastMove = null;
             winningCells = [];
+            gameStarted = false;
+            aiFirst = false;
+
+            // 显示开局选择界面，隐藏游戏区域
+            if (gameSetupElement && gameAreaElement) {
+                gameSetupElement.style.display = 'block';
+                gameAreaElement.style.display = 'none';
+            }
+            
+            // 清空棋盘（为后续游戏做准备）
+            if (boardElement) {
+                boardElement.innerHTML = '';
+            }
+            
+            console.log('开局设置界面初始化完成');
+        } catch (error) {
+            console.error('初始化开局设置时出错:', error);
+        }
+    }
+    
+    // 开始游戏
+    function startGame(aiGoesFirst) {
+        console.log(`开始游戏，AI先手: ${aiGoesFirst}`);
+        try {
+            aiFirst = aiGoesFirst;
+            gameStarted = true;
+            
+            // 隐藏开局选择界面，显示游戏区域
+            if (gameSetupElement && gameAreaElement) {
+                gameSetupElement.style.display = 'none';
+                gameAreaElement.style.display = 'block';
+            }
+            
+            // 初始化游戏棋盘
+            initGame();
+            
+        } catch (error) {
+            console.error('开始游戏时出错:', error);
+        }
+    }
+    
+    // 返回开局设置界面
+    function backToSetup() {
+        console.log('返回开局设置界面');
+        try {
+            initGameSetup();
+        } catch (error) {
+            console.error('返回设置界面时出错:', error);
+        }
+    }
+
+    // 初始化游戏棋盘
+    function initGame() {
+        console.log('初始化游戏棋盘...');
+        try {
+            // 清空棋盘
+            boardElement.innerHTML = '';
+            gameBoard = Array(BOARD_SIZE).fill().map(() => Array(BOARD_SIZE).fill(EMPTY));
+            gameOver = false;
+            lastMove = null;
+            winningCells = [];
+
+            // 根据先手选择设置当前玩家
+            if (aiFirst) {
+                currentPlayer = WHITE; // AI先手，AI执黑子，人执白子
+                console.log('AI先手，当前玩家：白子');
+            } else {
+                currentPlayer = BLACK; // 人先手，人执黑子
+                console.log('人先手，当前玩家：黑子');
+            }
 
             // 更新显示
             updateCurrentPlayerDisplay();
@@ -65,7 +180,13 @@ document.addEventListener('DOMContentLoaded', () => {
             // 创建棋盘可点击区域（覆盖整个棋盘）
             createBoardOverlay();
             
-            console.log('游戏初始化完成');
+            console.log('游戏棋盘初始化完成');
+            
+            // 如果AI先手，让AI立即落子
+            if (aiFirst && aiMode) {
+                console.log('AI先手，开始落子...');
+                setTimeout(makeAiMove, 500);
+            }
         } catch (error) {
             console.error('初始化游戏时出错:', error);
         }
@@ -167,9 +288,12 @@ document.addEventListener('DOMContentLoaded', () => {
         placePiece(row, col);
         
         // 如果游戏没有结束且是AI模式，让AI落子
-        if (!gameOver && aiMode && currentPlayer === WHITE) {
-            console.log('AI模式下轮到AI落子');
-            setTimeout(makeAiMove, 500); // 延迟500ms，让玩家看清自己的落子
+        if (!gameOver && aiMode) {
+            const isAiTurn = (aiFirst && currentPlayer === BLACK) || (!aiFirst && currentPlayer === WHITE);
+            if (isAiTurn) {
+                console.log('AI回合，AI开始落子');
+                setTimeout(makeAiMove, 500); // 延迟500ms，让玩家看清自己的落子
+            }
         }
     }
 
@@ -209,9 +333,12 @@ document.addEventListener('DOMContentLoaded', () => {
         placePiece(row, col);
         
         // 如果游戏没有结束且是AI模式，让AI落子
-        if (!gameOver && aiMode && currentPlayer === WHITE) {
-            console.log('AI模式下轮到AI落子');
-            setTimeout(makeAiMove, 500); // 延迟500ms，让玩家看清自己的落子
+        if (!gameOver && aiMode) {
+            const isAiTurn = (aiFirst && currentPlayer === BLACK) || (!aiFirst && currentPlayer === WHITE);
+            if (isAiTurn) {
+                console.log('AI回合，AI开始落子');
+                setTimeout(makeAiMove, 500); // 延迟500ms，让玩家看清自己的落子
+            }
         }
     }
     
@@ -377,7 +504,14 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // 重新开始游戏
     function restartGame() {
-        initGame();
+        console.log('重新开始游戏');
+        if (gameStarted) {
+            // 如果游戏已经开始，重新初始化棋盘
+            initGame();
+        } else {
+            // 如果游戏还没开始，返回设置界面
+            initGameSetup();
+        }
     }
     
 

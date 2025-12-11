@@ -164,11 +164,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // 根据先手选择设置当前玩家
             if (aiFirst) {
-                currentPlayer = WHITE; // AI先手，AI执黑子，人执白子
-                console.log('AI先手，当前玩家：白子');
+                currentPlayer = BLACK; // AI先手，AI执黑子，人执白子
+                console.log('AI先手，当前玩家：黑子（AI）');
             } else {
                 currentPlayer = BLACK; // 人先手，人执黑子
-                console.log('人先手，当前玩家：黑子');
+                console.log('人先手，当前玩家：黑子（玩家）');
             }
 
             // 更新显示
@@ -524,6 +524,13 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
+        // 检查是否是AI的回合
+        const isAiTurn = (aiFirst && currentPlayer === BLACK) || (!aiFirst && currentPlayer === WHITE);
+        if (!isAiTurn) {
+            console.log('不是AI回合，AI不落子');
+            return;
+        }
+        
         // 分析当前局势
         const gameAnalysis = analyzeGameState();
         console.log('游戏分析:', gameAnalysis);
@@ -535,6 +542,14 @@ document.addEventListener('DOMContentLoaded', () => {
         // 落子
         if (bestMove) {
             placePiece(bestMove.row, bestMove.col);
+            
+            // 如果游戏没有结束，且是AI先手模式，检查是否需要继续让AI落子（这种情况不应该发生，但作为保险）
+            if (!gameOver && aiMode) {
+                const nextIsAiTurn = (aiFirst && currentPlayer === BLACK) || (!aiFirst && currentPlayer === WHITE);
+                if (nextIsAiTurn) {
+                    console.warn('AI连续落子，这不应该发生');
+                }
+            }
         } else {
             console.error('AI无法找到合适的落子位置');
         }
@@ -673,6 +688,9 @@ document.addEventListener('DOMContentLoaded', () => {
         let bestScore = -Infinity;
         let bestMove = null;
         
+        // 确定AI执的棋子颜色
+        const aiPlayer = aiFirst ? BLACK : WHITE;
+        
         // 如果是AI第一步，优先考虑中心位置
         if (isFirstMove()) {
             const center = Math.floor(BOARD_SIZE / 2);
@@ -686,11 +704,11 @@ document.addEventListener('DOMContentLoaded', () => {
         for (let row = 0; row < BOARD_SIZE; row++) {
             for (let col = 0; col < BOARD_SIZE; col++) {
                 if (gameBoard[row][col] === EMPTY) {
-                    // 模拟落子
-                    gameBoard[row][col] = WHITE;
+                    // 模拟落子（使用AI的棋子颜色）
+                    gameBoard[row][col] = aiPlayer;
                     
                     // 评估此位置
-                    const score = evaluatePosition(row, col, WHITE);
+                    const score = evaluatePosition(row, col, aiPlayer);
                     
                     // 撤销模拟
                     gameBoard[row][col] = EMPTY;
@@ -849,14 +867,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // 获取防守优先级
     function getDefensePriority(row, col) {
         let priority = 0;
-        const opponent = BLACK; // 玩家是黑子
+        // 确定AI和对手的棋子颜色
+        const aiPlayer = aiFirst ? BLACK : WHITE;
+        const opponent = aiFirst ? WHITE : BLACK; // AI先手时，对手是白子；人先手时，对手是黑子
         
-        // 检查玩家是否有即将获胜的威胁
+        // 检查对手是否有即将获胜的威胁
         if (hasImmediateThreat(opponent)) {
-            priority += 10000; // 玩家有严重威胁，优先防守
+            priority += 10000; // 对手有严重威胁，优先防守
         }
         
-        // 检查此位置是否能够阻断玩家的连线
+        // 检查此位置是否能够阻断对手的连线
         const blockingValue = evaluateBlockingEffectiveness(row, col, opponent);
         priority += blockingValue;
         
@@ -949,20 +969,21 @@ document.addEventListener('DOMContentLoaded', () => {
     // 检查是否是AI的第一步
     function isFirstMove() {
         let emptyCount = 0;
-        let blackCount = 0;
+        let pieceCount = 0;
         
         for (let row = 0; row < BOARD_SIZE; row++) {
             for (let col = 0; col < BOARD_SIZE; col++) {
                 if (gameBoard[row][col] === EMPTY) {
                     emptyCount++;
-                } else if (gameBoard[row][col] === BLACK) {
-                    blackCount++;
+                } else {
+                    pieceCount++;
                 }
             }
         }
         
-        // 如果只有一个黑子，说明是AI的第一步
-        return blackCount === 1 && emptyCount === BOARD_SIZE - 1;
+        // 如果只有一个棋子，说明是AI的第一步
+        // AI先手时执黑子，人先手时AI执白子，所以检查总棋子数即可
+        return pieceCount === 1 && emptyCount === BOARD_SIZE * BOARD_SIZE - 1;
     }
     
     // 获取随机空位置

@@ -1,0 +1,247 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 20px;
+    color: #333;
+}
+
+.back-link {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 1000;
+    color: #4facfe;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 16px;
+    padding: 10px 15px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 8px;
+    border: 2px solid #4facfe;
+    transition: all 0.3s;
+}
+
+.back-link:hover {
+    background: #4facfe;
+    color: white;
+    text-decoration: none;
+}
+
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+    font-size: 2.5rem;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.game-info {
+    margin-bottom: 20px;
+}
+
+.score-board {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    border-radius: 10px;
+}
+
+.score-item {
+    text-align: center;
+}
+
+.score-item .label {
+    display: block;
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 5px;
+}
+
+.score-item .value {
+    display: block;
+    font-size: 2rem;
+    font-weight: bold;
+    color: #4facfe;
+}
+
+.controls {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.game-container {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+#gameCanvas {
+    border: 3px solid #333;
+    border-radius: 10px;
+    background: #1a1a2e;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.game-over {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255, 255, 255, 0.95);
+    padding: 30px;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    z-index: 100;
+}
+
+.game-over h2 {
+    color: #e74c3c;
+    margin-bottom: 15px;
+    font-size: 2rem;
+}
+
+.game-over p {
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.game-over #finalScore {
+    font-weight: bold;
+    color: #4facfe;
+    font-size: 1.5rem;
+}
+
+.hidden {
+    display: none;
+}
+
+.instructions {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 20px;
+}
+
+.instructions h3 {
+    color: #333;
+    margin-bottom: 10px;
+    font-size: 1.3rem;
+}
+
+.instructions p {
+    color: #666;
+    margin-bottom: 8px;
+    line-height: 1.6;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+    .back-link {
+        top: 10px;
+        left: 10px;
+        font-size: 14px;
+        padding: 8px 12px;
+    }
+    
+    body {
+        padding: 10px;
+    }
+    
+    .container {
+        padding: 20px;
+    }
+    
+    h1 {
+        font-size: 2rem;
+    }
+    
+    .score-item .value {
+        font-size: 1.5rem;
+    }
+    
+    .btn {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+    
+    .game-over {
+        padding: 20px;
+    }
+    
+    .game-over h2 {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 15px;
+    }
+    
+    h1 {
+        font-size: 1.8rem;
+    }
+    
+    .controls {
+        flex-direction: column;
+    }
+    
+    .btn {
+        width: 100%;
+    }
+}
+

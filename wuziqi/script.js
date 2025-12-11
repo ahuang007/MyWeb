@@ -690,6 +690,14 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // 确定AI执的棋子颜色
         const aiPlayer = aiFirst ? BLACK : WHITE;
+        const opponent = aiFirst ? WHITE : BLACK;
+        
+        // 最高优先级：检查对手是否有活四，必须立即封堵
+        const liveFourBlockMove = findLiveFourBlockMove(opponent);
+        if (liveFourBlockMove) {
+            console.log('发现对手活四！必须立即封堵！');
+            return liveFourBlockMove;
+        }
         
         // 如果是AI第一步，优先考虑中心位置
         if (isFirstMove()) {
@@ -964,6 +972,129 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         return count;
+    }
+    
+    // 查找对手的活四并返回需要封堵的位置
+    function findLiveFourBlockMove(opponent) {
+        const directions = [
+            { dr: 0, dc: 1 },  // 水平
+            { dr: 1, dc: 0 },  // 垂直
+            { dr: 1, dc: 1 },  // 对角线 /
+            { dr: 1, dc: -1 }  // 对角线 \
+        ];
+        
+        // 使用集合记录已检查的活四，避免重复
+        const checkedLiveFours = new Set();
+        
+        // 遍历棋盘，查找对手的活四
+        for (let row = 0; row < BOARD_SIZE; row++) {
+            for (let col = 0; col < BOARD_SIZE; col++) {
+                if (gameBoard[row][col] === opponent) {
+                    // 检查这个棋子周围是否有活四
+                    for (const dir of directions) {
+                        // 创建唯一标识符，避免重复检查同一个活四
+                        const directionKey = `${dir.dr},${dir.dc}`;
+                        const checkKey = `${row},${col},${directionKey}`;
+                        
+                        if (checkedLiveFours.has(checkKey)) {
+                            continue; // 已经检查过这个方向的活四
+                        }
+                        
+                        const liveFourInfo = checkLiveFourInDirection(row, col, dir.dr, dir.dc, opponent);
+                        if (liveFourInfo.isLiveFour) {
+                            // 标记这个活四的所有棋子为已检查
+                            const consecutivePieces = getConsecutivePiecesInDirection(row, col, dir.dr, dir.dc, opponent);
+                            consecutivePieces.forEach(piece => {
+                                checkedLiveFours.add(`${piece.row},${piece.col},${directionKey}`);
+                            });
+                            
+                            // 找到活四，返回需要封堵的位置
+                            // 活四两端都可以封堵，优先选择更靠近中心的位置
+                            const blockPos1 = liveFourInfo.blockPos1;
+                            const blockPos2 = liveFourInfo.blockPos2;
+                            
+                            if (blockPos1 && blockPos2) {
+                                // 选择更靠近中心的位置
+                                const center = BOARD_SIZE / 2;
+                                const dist1 = Math.abs(blockPos1.row - center) + Math.abs(blockPos1.col - center);
+                                const dist2 = Math.abs(blockPos2.row - center) + Math.abs(blockPos2.col - center);
+                                return dist1 <= dist2 ? blockPos1 : blockPos2;
+                            } else if (blockPos1) {
+                                return blockPos1;
+                            } else if (blockPos2) {
+                                return blockPos2;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        return null;
+    }
+    
+    // 获取特定方向上的连续棋子
+    function getConsecutivePiecesInDirection(startRow, startCol, dr, dc, player) {
+        let consecutivePieces = [{ row: startRow, col: startCol }];
+        
+        // 向后查找
+        let r = startRow - dr;
+        let c = startCol - dc;
+        while (r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE && gameBoard[r][c] === player) {
+            consecutivePieces.unshift({ row: r, col: c });
+            r -= dr;
+            c -= dc;
+        }
+        
+        // 向前查找
+        r = startRow + dr;
+        c = startCol + dc;
+        while (r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE && gameBoard[r][c] === player) {
+            consecutivePieces.push({ row: r, col: c });
+            r += dr;
+            c += dc;
+        }
+        
+        return consecutivePieces;
+    }
+    
+    // 检查特定方向上是否有活四
+    function checkLiveFourInDirection(startRow, startCol, dr, dc, player) {
+        // 先找到这个方向上连续的棋子（包括起始位置）
+        let consecutivePieces = [{ row: startRow, col: startCol }];
+        
+        // 向后查找
+        let r = startRow - dr;
+        let c = startCol - dc;
+        while (r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE && gameBoard[r][c] === player) {
+            consecutivePieces.unshift({ row: r, col: c });
+            r -= dr;
+            c -= dc;
+        }
+        const backEmpty = (r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE && gameBoard[r][c] === EMPTY);
+        const backBlockPos = backEmpty ? { row: r, col: c } : null;
+        
+        // 向前查找
+        r = startRow + dr;
+        c = startCol + dc;
+        while (r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE && gameBoard[r][c] === player) {
+            consecutivePieces.push({ row: r, col: c });
+            r += dr;
+            c += dc;
+        }
+        const frontEmpty = (r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE && gameBoard[r][c] === EMPTY);
+        const frontBlockPos = frontEmpty ? { row: r, col: c } : null;
+        
+        // 检查是否是活四（4个连续棋子，且两端都有空位）
+        if (consecutivePieces.length === 4 && backEmpty && frontEmpty) {
+            return {
+                isLiveFour: true,
+                blockPos1: backBlockPos,
+                blockPos2: frontBlockPos
+            };
+        }
+        
+        return { isLiveFour: false };
     }
     
     // 检查是否是AI的第一步

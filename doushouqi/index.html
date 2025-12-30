@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>斗兽棋游戏</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <a href="../index.html" class="back-link">← 返回首页</a>
+    <div class="container">
+        <h1>斗兽棋</h1>
+        
+        <div class="game-info">
+            <div class="status">
+                当前玩家: <span id="current-player">红方</span>
+            </div>
+            <div class="game-controls">
+                <button id="restart">重新开始</button>
+            </div>
+        </div>
+        
+        <div class="board-container">
+            <div id="board"></div>
+        </div>
+        
+        <div class="rules">
+            <h3>游戏规则</h3>
+            <ul>
+                <li>等级：象>狮>虎>豹>狼>狗>猫>鼠，但鼠可以吃象</li>
+                <li>点击棋子选择，再点击目标位置移动</li>
+                <li>占领对方兽穴（最底行中间）即可获胜</li>
+                <li>进入陷阱的棋子可以被任何棋子吃掉</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
+
+

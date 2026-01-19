@@ -139,8 +139,8 @@ function startGame() {
     startBtn.disabled = true;
     pauseBtn.disabled = false;
     
-    // 开始游戏循环
-    gameLoop = setInterval(update, 150);
+    // 开始游戏循环（200毫秒，降低速度）
+    gameLoop = setInterval(update, 500);
 }
 
 // 暂停/继续游戏
@@ -153,7 +153,7 @@ function togglePause() {
         clearInterval(gameLoop);
         pauseBtn.textContent = '继续';
     } else {
-        gameLoop = setInterval(update, 150);
+        gameLoop = setInterval(update, 200);
         pauseBtn.textContent = '暂停';
     }
 }
@@ -386,6 +386,8 @@ function draw() {
 
 // 页面加载完成后初始化
 document.addEventListener('DOMContentLoaded', init);
+
+
 
 
 

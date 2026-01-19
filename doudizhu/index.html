@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>斗地主</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <a href="../index.html" class="back-link">← 返回首页</a>
+    <div class="container">
+        <h1>斗地主</h1>
+        
+        <div class="game-info">
+            <div class="status">
+                <span id="game-status">准备开始</span>
+            </div>
+            <div class="controls">
+                <button id="new-game">新游戏</button>
+            </div>
+        </div>
+        
+        <!-- 叫地主阶段 -->
+        <div id="landlord-phase" class="landlord-phase" style="display: none;">
+            <div class="landlord-info">
+                <div class="player-info">
+                    <div class="player-name">玩家</div>
+                    <button id="call-landlord" class="action-btn">叫地主</button>
+                    <button id="pass-call" class="action-btn">不叫</button>
+                </div>
+                <div class="player-info">
+                    <div class="player-name">AI1</div>
+                    <div id="ai1-action" class="ai-action">等待中...</div>
+                </div>
+                <div class="player-info">
+                    <div class="player-name">AI2</div>
+                    <div id="ai2-action" class="ai-action">等待中...</div>
+                </div>
+            </div>
+            <div class="landlord-cards" id="landlord-cards"></div>
+        </div>
+        
+        <!-- 游戏阶段 -->
+        <div id="game-phase" class="game-phase" style="display: none;">
+            <!-- 上方AI1 -->
+            <div class="player-area top-player">
+                <div class="player-name">AI1 <span id="ai1-cards-count">17</span>张</div>
+                <div class="cards-container" id="ai1-cards"></div>
+                <div class="last-play" id="ai1-last-play"></div>
+            </div>
+            
+            <!-- 中间区域 -->
+            <div class="center-area">
+                <div class="landlord-info-display">
+                    <span id="landlord-display">地主：玩家</span>
+                </div>
+                <div class="last-play-area" id="last-play-area">
+                    <div class="last-play-label">上家出牌：</div>
+                    <div class="last-play-cards" id="last-play-cards"></div>
+                </div>
+            </div>
+            
+            <!-- 左侧AI2 -->
+            <div class="player-area left-player">
+                <div class="player-name">AI2 <span id="ai2-cards-count">17</span>张</div>
+                <div class="cards-container" id="ai2-cards"></div>
+                <div class="last-play" id="ai2-last-play"></div>
+            </div>
+            
+            <!-- 下方玩家 -->
+            <div class="player-area bottom-player">
+                <div class="player-name">玩家 <span id="player-cards-count">20</span>张</div>
+                <div class="cards-container" id="player-cards"></div>
+                <div class="action-area">
+                    <button id="play-cards" class="action-btn" disabled>出牌</button>
+                    <button id="pass-turn" class="action-btn" disabled>不要</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 游戏结果 -->
+        <div id="game-result" class="game-result" style="display: none;">
+            <h2 id="result-title"></h2>
+            <button id="play-again" class="action-btn">再来一局</button>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
+
+

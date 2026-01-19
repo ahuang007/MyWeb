@@ -1,0 +1,353 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 20px;
+    color: #333;
+}
+
+.back-link {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 1000;
+    color: #4facfe;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 16px;
+    padding: 10px 15px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 8px;
+    border: 2px solid #4facfe;
+    transition: all 0.3s;
+}
+
+.back-link:hover {
+    background: #4facfe;
+    color: white;
+    text-decoration: none;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+}
+
+h1 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+    font-size: 2.5rem;
+}
+
+.game-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.status {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+}
+
+button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s;
+    font-size: 16px;
+}
+
+button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+#new-game {
+    background: #28a745;
+    color: white;
+}
+
+#new-game:hover:not(:disabled) {
+    background: #218838;
+}
+
+.action-btn {
+    background: #4facfe;
+    color: white;
+    margin: 0 5px;
+}
+
+.action-btn:hover:not(:disabled) {
+    background: #00f2fe;
+}
+
+/* 叫地主阶段 */
+.landlord-phase {
+    text-align: center;
+    padding: 20px;
+}
+
+.landlord-info {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.player-info {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 10px;
+    min-width: 200px;
+}
+
+.player-name {
+    font-weight: bold;
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+.ai-action {
+    color: #666;
+    font-style: italic;
+}
+
+.landlord-cards {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+/* 游戏阶段 */
+.game-phase {
+    position: relative;
+    min-height: 600px;
+}
+
+.player-area {
+    position: absolute;
+    background: rgba(248, 249, 250, 0.8);
+    border-radius: 10px;
+    padding: 15px;
+}
+
+.top-player {
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 300px;
+    text-align: center;
+}
+
+.left-player {
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 200px;
+    text-align: center;
+}
+
+.bottom-player {
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    text-align: center;
+}
+
+.player-name {
+    font-weight: bold;
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+
+.cards-container {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 5px;
+    min-height: 80px;
+}
+
+.card {
+    width: 50px;
+    height: 70px;
+    background: white;
+    border: 2px solid #333;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 5px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.card.selected {
+    transform: translateY(-15px);
+    border-color: #4facfe;
+    box-shadow: 0 0 10px #4facfe;
+}
+
+.card.red {
+    color: #d32f2f;
+}
+
+.card.black {
+    color: #333;
+}
+
+.card.back {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    justify-content: center;
+    align-items: center;
+    font-size: 20px;
+}
+
+.card-value {
+    font-size: 14px;
+}
+
+.card-suit {
+    font-size: 18px;
+    text-align: center;
+}
+
+.last-play {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #666;
+    min-height: 20px;
+}
+
+.center-area {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    width: 400px;
+}
+
+.landlord-info-display {
+    background: #ffc107;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+.last-play-area {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 15px;
+    border-radius: 8px;
+    min-height: 100px;
+}
+
+.last-play-label {
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.last-play-cards {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+.action-area {
+    margin-top: 15px;
+}
+
+/* 游戏结果 */
+.game-result {
+    text-align: center;
+    padding: 40px;
+}
+
+.game-result h2 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+    color: #28a745;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+    .container {
+        padding: 15px;
+    }
+    
+    h1 {
+        font-size: 2rem;
+    }
+    
+    .player-area {
+        position: relative;
+        transform: none;
+        margin: 10px 0;
+        width: 100%;
+    }
+    
+    .top-player, .left-player, .bottom-player {
+        position: relative;
+        transform: none;
+    }
+    
+    .center-area {
+        position: relative;
+        transform: none;
+        width: 100%;
+        margin: 20px 0;
+    }
+    
+    .card {
+        width: 40px;
+        height: 56px;
+        font-size: 10px;
+    }
+    
+    .card-value {
+        font-size: 12px;
+    }
+    
+    .card-suit {
+        font-size: 14px;
+    }
+}
+
+

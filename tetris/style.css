@@ -1,0 +1,257 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 20px;
+    color: #333;
+}
+
+.back-link {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 1000;
+    color: #4facfe;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 16px;
+    padding: 10px 15px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 8px;
+    border: 2px solid #4facfe;
+    transition: all 0.3s;
+}
+
+.back-link:hover {
+    background: #4facfe;
+    color: white;
+    text-decoration: none;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+}
+
+h1 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+    font-size: 2.5rem;
+}
+
+.game-wrapper {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.game-info {
+    flex: 0 0 250px;
+}
+
+.info-panel {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.score-board {
+    margin-bottom: 20px;
+}
+
+.score-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    padding: 10px;
+    background: white;
+    border-radius: 5px;
+}
+
+.score-item .label {
+    font-size: 16px;
+    color: #666;
+}
+
+.score-item .value {
+    font-size: 20px;
+    font-weight: bold;
+    color: #4facfe;
+}
+
+.next-piece {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.next-piece .label {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+#nextCanvas {
+    background: #1a1a2e;
+    border: 2px solid #333;
+    border-radius: 5px;
+}
+
+.controls-info {
+    margin-top: 20px;
+}
+
+.controls-info h3 {
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.controls-info p {
+    font-size: 14px;
+    line-height: 1.8;
+    color: #555;
+    margin-bottom: 5px;
+}
+
+.game-area {
+    position: relative;
+    flex: 0 0 auto;
+}
+
+#gameCanvas {
+    border: 3px solid #333;
+    border-radius: 10px;
+    background: #1a1a2e;
+    display: block;
+}
+
+.game-over, .game-paused {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255, 255, 255, 0.95);
+    padding: 40px;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    z-index: 100;
+}
+
+.game-over.hidden, .game-paused.hidden {
+    display: none;
+}
+
+.game-over h2, .game-paused h2 {
+    color: #333;
+    margin-bottom: 20px;
+    font-size: 2rem;
+}
+
+.game-over p, .game-paused p {
+    font-size: 18px;
+    margin-bottom: 20px;
+    color: #666;
+}
+
+.game-controls {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s;
+    font-size: 16px;
+}
+
+.btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-primary {
+    background: #4facfe;
+    color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: #00f2fe;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background: #5a6268;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+    .container {
+        padding: 15px;
+    }
+    
+    h1 {
+        font-size: 2rem;
+    }
+    
+    .game-wrapper {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .game-info {
+        flex: 1 1 auto;
+        width: 100%;
+    }
+    
+    .info-panel {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+    
+    .score-board {
+        flex: 1 1 auto;
+        margin-bottom: 0;
+    }
+    
+    .next-piece {
+        flex: 0 0 auto;
+        margin-bottom: 0;
+    }
+    
+    .controls-info {
+        flex: 1 1 100%;
+        margin-top: 0;
+    }
+}

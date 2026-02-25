@@ -54,6 +54,13 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // 按键状态
     const keys = {};
+    // 手机：发射按钮按住、陀螺仪倾斜量（与普通敌机互斥使用）
+    let mobileFiring = false;
+    let gyroGamma = 0;
+    let gyroBeta = 0;
+    let gyroAvailable = false;
+    const GYRO_SENSITIVITY = 2;     // 陀螺仪灵敏度（每帧位移倍数）
+    const GYRO_DEADZONE = 8;        // 死区（度），避免轻微晃动
     
     // DOM
     const scoreEl = document.getElementById('score');
@@ -67,6 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const startBtn = document.getElementById('start-btn');
     const restartBtn = document.getElementById('restart-btn');
     const playBtn = document.getElementById('play-btn');
+    const fireBtn = document.getElementById('fire-btn');
     
     // 敌机生成计时（毫秒）
     let enemySpawnTimer = 0;
@@ -79,7 +87,43 @@ document.addEventListener('DOMContentLoaded', () => {
         startBtn.addEventListener('click', showStartScreen);
         playBtn.addEventListener('click', startGame);
         restartBtn.addEventListener('click', startGame);
+        setupFireButton();
+        setupGyro();
         loadEnemyImages();
+    }
+
+    function setupFireButton() {
+        if (!fireBtn) return;
+        const setFiring = (v) => { mobileFiring = v; };
+        fireBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); setFiring(true); });
+        fireBtn.addEventListener('pointerup', (e) => { e.preventDefault(); setFiring(false); });
+        fireBtn.addEventListener('pointerleave', () => setFiring(false));
+        fireBtn.addEventListener('touchstart', (e) => e.preventDefault(), { passive: false });
+        fireBtn.addEventListener('touchend', (e) => e.preventDefault(), { passive: false });
+    }
+
+    function setupGyro() {
+        if (typeof DeviceOrientationEvent === 'undefined') return;
+        const onOrientation = (e) => {
+            if (e.gamma != null) gyroGamma = e.gamma;
+            if (e.beta != null) gyroBeta = e.beta;
+            gyroAvailable = true;
+        };
+        const reqPermission = () => {
+            if (typeof DeviceOrientationEvent.requestPermission !== 'function') {
+                window.addEventListener('deviceorientation', onOrientation);
+                return;
+            }
+            DeviceOrientationEvent.requestPermission()
+                .then((perm) => {
+                    if (perm === 'granted') window.addEventListener('deviceorientation', onOrientation);
+                })
+                .catch(() => {});
+        };
+        window.addEventListener('deviceorientation', onOrientation);
+        if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+            playBtn.addEventListener('click', () => reqPermission(), { once: true });
+        }
     }
     
     function loadEnemyImages() {
@@ -168,24 +212,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function updatePlayer() {
-        if (keys['ArrowLeft'] || keys['KeyA']) {
-            player.x -= player.speed;
-        }
-        if (keys['ArrowRight'] || keys['KeyD']) {
-            player.x += player.speed;
-        }
-        if (keys['ArrowUp'] || keys['KeyW']) {
-            player.y -= player.speed;
-        }
-        if (keys['ArrowDown'] || keys['KeyS']) {
-            player.y += player.speed;
+        const useGyro = gyroAvailable && ('ontouchstart' in window || navigator.maxTouchPoints > 0);
+        if (useGyro) {
+            const g = Math.abs(gyroGamma) <= GYRO_DEADZONE ? 0 : (gyroGamma > 0 ? Math.min(1, (gyroGamma - GYRO_DEADZONE) / 30) : Math.max(-1, (gyroGamma + GYRO_DEADZONE) / 30));
+            const b = Math.abs(gyroBeta - 90) <= GYRO_DEADZONE ? 0 : (gyroBeta < 90 ? Math.min(1, (90 - gyroBeta) / 30) : Math.max(-1, (90 - gyroBeta) / 30));
+            player.x += g * player.speed * GYRO_SENSITIVITY;
+            player.y += b * player.speed * GYRO_SENSITIVITY;
+        } else {
+            if (keys['ArrowLeft'] || keys['KeyA']) player.x -= player.speed;
+            if (keys['ArrowRight'] || keys['KeyD']) player.x += player.speed;
+            if (keys['ArrowUp'] || keys['KeyW']) player.y -= player.speed;
+            if (keys['ArrowDown'] || keys['KeyS']) player.y += player.speed;
         }
         
         player.x = Math.max(0, Math.min(WIDTH - player.width, player.x));
         player.y = Math.max(HEIGHT / 2, Math.min(HEIGHT - player.height, player.y));
         
-        // 发射
-        if (keys['Space'] && gameRunning) {
+        // 发射：键盘空格或手机发射按钮
+        const wantFire = keys['Space'] || mobileFiring;
+        if (wantFire && gameRunning) {
             const now = Date.now();
             if (now - player.lastFire > player.fireRate) {
                 player.lastFire = now;

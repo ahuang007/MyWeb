@@ -4,18 +4,26 @@
     box-sizing: border-box;
 }
 
+html {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
 body {
     font-family: 'Arial', sans-serif;
     background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
     min-height: 100vh;
     padding: 20px;
+    padding-left: max(20px, env(safe-area-inset-left));
+    padding-right: max(20px, env(safe-area-inset-right));
+    padding-bottom: max(20px, env(safe-area-inset-bottom));
     color: #eee;
 }
 
 .back-link {
     position: absolute;
-    top: 20px;
-    left: 20px;
+    top: max(20px, env(safe-area-inset-top));
+    left: max(20px, env(safe-area-inset-left));
     z-index: 1000;
     color: #4facfe;
     text-decoration: none;
@@ -125,6 +133,7 @@ h1 {
 .game-wrapper {
     position: relative;
     display: inline-block;
+    max-width: 100%;
     border: 3px solid #4facfe;
     border-radius: 10px;
     overflow: hidden;
@@ -133,8 +142,50 @@ h1 {
 
 #gameCanvas {
     display: block;
+    width: 100%;
+    max-width: 480px;
+    height: auto;
+    aspect-ratio: 480 / 640;
     background: linear-gradient(180deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
     cursor: none;
+    touch-action: none;
+}
+
+/* 手机发射按钮：触摸设备显示 */
+.fire-btn {
+    display: none;
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    border: 3px solid #00f2fe;
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: #1a1a2e;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 50;
+    box-shadow: 0 4px 20px rgba(79, 172, 254, 0.5);
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+    padding: 0;
+}
+.fire-btn:active {
+    transform: scale(0.95);
+    box-shadow: 0 2px 10px rgba(79, 172, 254, 0.6);
+}
+
+.mobile-only { display: none; }
+@media (hover: none) and (pointer: coarse) {
+    .fire-btn { display: block; }
+    .desktop-only { display: none !important; }
+    .mobile-only { display: block; }
+}
+@media (hover: hover) {
+    .mobile-only { display: none !important; }
 }
 
 .game-over, .game-start {

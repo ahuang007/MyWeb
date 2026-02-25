@@ -85,6 +85,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const pauseBtn = document.getElementById('pause-btn');
     const restartBtn = document.getElementById('restart-btn');
     const playAgainBtn = document.getElementById('play-again');
+    const btnLeft = document.getElementById('btn-left');
+    const btnRight = document.getElementById('btn-right');
+    const btnRotate = document.getElementById('btn-rotate');
+    const btnDown = document.getElementById('btn-down');
+    
+    // 陀螺仪：左右倾斜移动，带节流
+    let gyroGamma = 0;
+    let lastGyroMove = 0;
+    const GYRO_THROTTLE_MS = 180;
+    const GYRO_DEADZONE = 12;
     
     // 初始化
     function init() {
@@ -109,10 +119,69 @@ document.addEventListener('DOMContentLoaded', () => {
         restartBtn.addEventListener('click', resetGame);
         playAgainBtn.addEventListener('click', resetGame);
         document.addEventListener('keydown', handleKeyPress);
+        setupMobileControls();
+        setupGyro();
+        
+        if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+            document.body.classList.add('mobile-fullscreen');
+        }
         
         // 绘制初始状态
         draw();
         drawNext();
+    }
+    
+    function setupMobileControls() {
+        if (!btnLeft || !btnRight || !btnRotate || !btnDown) return;
+        const trigger = (fn) => {
+            if (!gameRunning || gamePaused) return;
+            fn();
+            draw();
+        };
+        btnLeft.addEventListener('pointerdown', (e) => { e.preventDefault(); trigger(() => movePiece(-1)); });
+        btnRight.addEventListener('pointerdown', (e) => { e.preventDefault(); trigger(() => movePiece(1)); });
+        btnRotate.addEventListener('pointerdown', (e) => { e.preventDefault(); trigger(rotatePiece); });
+        btnDown.addEventListener('pointerdown', (e) => { e.preventDefault(); trigger(dropPiece); });
+        [btnLeft, btnRight, btnRotate, btnDown].forEach(el => {
+            if (el) {
+                el.addEventListener('touchstart', (e) => e.preventDefault(), { passive: false });
+            }
+        });
+    }
+    
+    function setupGyro() {
+        if (typeof DeviceOrientationEvent === 'undefined') return;
+        const onOrientation = (e) => {
+            if (e.gamma != null) gyroGamma = e.gamma;
+        };
+        const reqPermission = () => {
+            if (typeof DeviceOrientationEvent.requestPermission !== 'function') {
+                window.addEventListener('deviceorientation', onOrientation);
+                return;
+            }
+            DeviceOrientationEvent.requestPermission()
+                .then((perm) => {
+                    if (perm === 'granted') window.addEventListener('deviceorientation', onOrientation);
+                })
+                .catch(() => {});
+        };
+        window.addEventListener('deviceorientation', onOrientation);
+        if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+            startBtn.addEventListener('click', () => reqPermission(), { once: true });
+        }
+    }
+    
+    function applyGyroMove() {
+        if (!gameRunning || gamePaused || !currentPiece) return;
+        const now = Date.now();
+        if (now - lastGyroMove < GYRO_THROTTLE_MS) return;
+        if (gyroGamma < -GYRO_DEADZONE) {
+            movePiece(-1);
+            lastGyroMove = now;
+        } else if (gyroGamma > GYRO_DEADZONE) {
+            movePiece(1);
+            lastGyroMove = now;
+        }
     }
     
     // 初始化棋盘
@@ -205,6 +274,7 @@ document.addEventListener('DOMContentLoaded', () => {
             dropTime = 0;
         }
         
+        applyGyroMove();
         draw();
         requestAnimationFrame(gameLoop);
     }

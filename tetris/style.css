@@ -4,18 +4,26 @@
     box-sizing: border-box;
 }
 
+html {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
 body {
     font-family: 'Arial', sans-serif;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     min-height: 100vh;
     padding: 20px;
+    padding-left: max(20px, env(safe-area-inset-left));
+    padding-right: max(20px, env(safe-area-inset-right));
+    padding-bottom: max(20px, env(safe-area-inset-bottom));
     color: #333;
 }
 
 .back-link {
     position: absolute;
-    top: 20px;
-    left: 20px;
+    top: max(20px, env(safe-area-inset-top));
+    left: max(20px, env(safe-area-inset-left));
     z-index: 1000;
     color: #4facfe;
     text-decoration: none;
@@ -176,6 +184,50 @@ h1 {
     width: 100%;
 }
 
+/* 手机端：游戏区下方操作栏（左/右/旋转/下落），不遮挡游戏 */
+.mobile-controls-bar {
+    display: none;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 14px 16px;
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
+    padding-bottom: max(14px, env(safe-area-inset-bottom));
+    min-height: 72px;
+    background: rgba(0, 0, 0, 0.15);
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+.ctrl-btn {
+    width: 56px;
+    height: 56px;
+    border-radius: 12px;
+    border: 2px solid #4facfe;
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: #1a1a2e;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 10px rgba(79, 172, 254, 0.4);
+    transition: transform 0.1s;
+}
+.ctrl-btn:active {
+    transform: scale(0.92);
+}
+.ctrl-rotate {
+    font-size: 28px;
+    width: 64px;
+    height: 64px;
+}
+
 .btn {
     padding: 12px 24px;
     border: none;
@@ -253,5 +305,67 @@ h1 {
     .controls-info {
         flex: 1 1 100%;
         margin-top: 0;
+    }
+}
+
+/* 手机端：全屏游戏区 + 下方操作栏 */
+@media (hover: none) and (pointer: coarse) {
+    body.mobile-fullscreen {
+        padding: 0;
+        overflow-x: hidden;
+    }
+    body.mobile-fullscreen .container {
+        max-width: none;
+        padding: 0;
+        min-height: 100vh;
+        min-height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        border-radius: 0;
+    }
+    body.mobile-fullscreen h1 {
+        flex-shrink: 0;
+        margin: 0;
+        padding: 10px 0 6px;
+        font-size: 1.3rem;
+    }
+    body.mobile-fullscreen .game-wrapper {
+        flex: 1;
+        min-height: 0;
+        flex-direction: column;
+        padding: 0 8px;
+    }
+    body.mobile-fullscreen .game-info {
+        flex: 0 0 auto;
+        width: 100%;
+        max-width: 100%;
+    }
+    body.mobile-fullscreen .info-panel {
+        padding: 12px;
+        margin-bottom: 8px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    body.mobile-fullscreen .game-area {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    body.mobile-fullscreen #gameCanvas {
+        max-width: 100%;
+        width: auto;
+        height: auto;
+        aspect-ratio: 10 / 20;
+        object-fit: contain;
+    }
+    body.mobile-fullscreen .game-controls {
+        flex-shrink: 0;
+        padding: 8px 0;
+    }
+    .mobile-controls-bar {
+        display: flex;
     }
 }

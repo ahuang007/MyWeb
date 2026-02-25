@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
     <title>俄罗斯方块</title>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -65,6 +65,12 @@
                 <button id="start-btn" class="btn btn-primary">开始游戏</button>
                 <button id="pause-btn" class="btn btn-secondary" disabled>暂停</button>
                 <button id="restart-btn" class="btn btn-secondary">重新开始</button>
+            </div>
+            <div class="mobile-controls-bar" id="mobile-controls-bar">
+                <button type="button" id="btn-left" class="ctrl-btn ctrl-left" aria-label="左移">←</button>
+                <button type="button" id="btn-right" class="ctrl-btn ctrl-right" aria-label="右移">→</button>
+                <button type="button" id="btn-rotate" class="ctrl-btn ctrl-rotate" aria-label="旋转">↻</button>
+                <button type="button" id="btn-down" class="ctrl-btn ctrl-down" aria-label="下落">↓</button>
             </div>
         </div>
     </div>

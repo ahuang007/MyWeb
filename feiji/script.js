@@ -54,13 +54,22 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // 按键状态
     const keys = {};
-    // 手机：发射按钮按住、陀螺仪倾斜量（与普通敌机互斥使用）
+    // 手机：发射按钮按住、陀螺仪倾斜量、触摸摇杆方向
     let mobileFiring = false;
     let gyroGamma = 0;
     let gyroBeta = 0;
     let gyroAvailable = false;
-    const GYRO_SENSITIVITY = 2;     // 陀螺仪灵敏度（每帧位移倍数）
-    const GYRO_DEADZONE = 8;        // 死区（度），避免轻微晃动
+    const GYRO_SENSITIVITY = 2;
+    const GYRO_DEADZONE = 8;
+    let touchStickX = 0;
+    let touchStickY = 0;
+    let touchJoyActive = false;
+    let touchJoyThumbX = 70;
+    let touchJoyThumbY = HEIGHT - 90;
+    const JOY_BASE_X = 70;
+    const JOY_BASE_Y = HEIGHT - 90;
+    const JOY_RADIUS = 48;
+    const JOY_ACTIVE_ZONE_LEFT = 160;  // 触摸左侧此宽度内激活摇杆
     
     // DOM
     const scoreEl = document.getElementById('score');
@@ -82,6 +91,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function init() {
         highScoreEl.textContent = highScore;
         updateHealthDisplay();
+        if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+            document.body.classList.add('mobile-fullscreen');
+        }
         document.addEventListener('keydown', handleKeyDown);
         document.addEventListener('keyup', handleKeyUp);
         startBtn.addEventListener('click', showStartScreen);
@@ -89,7 +101,76 @@ document.addEventListener('DOMContentLoaded', () => {
         restartBtn.addEventListener('click', startGame);
         setupFireButton();
         setupGyro();
+        setupTouchJoystick();
         loadEnemyImages();
+    }
+
+    function clientToCanvas(clientX, clientY) {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        return {
+            x: (clientX - rect.left) * scaleX,
+            y: (clientY - rect.top) * scaleY
+        };
+    }
+
+    function setupTouchJoystick() {
+        const onStart = (clientX, clientY) => {
+            const p = clientToCanvas(clientX, clientY);
+            if (p.x <= JOY_ACTIVE_ZONE_LEFT && gameRunning) {
+                touchJoyActive = true;
+                touchJoyThumbX = Math.max(0, Math.min(WIDTH, p.x));
+                touchJoyThumbY = Math.max(0, Math.min(HEIGHT, p.y));
+                updateTouchStickFromThumb();
+            }
+        };
+        const onMove = (clientX, clientY) => {
+            if (!touchJoyActive) return;
+            const p = clientToCanvas(clientX, clientY);
+            let dx = p.x - JOY_BASE_X;
+            let dy = p.y - JOY_BASE_Y;
+            const len = Math.sqrt(dx * dx + dy * dy) || 1;
+            if (len > JOY_RADIUS) {
+                dx = (dx / len) * JOY_RADIUS;
+                dy = (dy / len) * JOY_RADIUS;
+            }
+            touchJoyThumbX = JOY_BASE_X + dx;
+            touchJoyThumbY = JOY_BASE_Y + dy;
+            updateTouchStickFromThumb();
+        };
+        const onEnd = () => {
+            touchJoyActive = false;
+            touchStickX = 0;
+            touchStickY = 0;
+            touchJoyThumbX = JOY_BASE_X;
+            touchJoyThumbY = JOY_BASE_Y;
+        };
+        function updateTouchStickFromThumb() {
+            const dx = touchJoyThumbX - JOY_BASE_X;
+            const dy = touchJoyThumbY - JOY_BASE_Y;
+            const len = Math.min(Math.sqrt(dx * dx + dy * dy), JOY_RADIUS);
+            const r = len / JOY_RADIUS;
+            touchStickX = len === 0 ? 0 : (dx / JOY_RADIUS);
+            touchStickY = len === 0 ? 0 : (dy / JOY_RADIUS);
+        }
+        canvas.addEventListener('touchstart', (e) => {
+            if (e.touches.length > 0) {
+                e.preventDefault();
+                onStart(e.touches[0].clientX, e.touches[0].clientY);
+            }
+        }, { passive: false });
+        canvas.addEventListener('touchmove', (e) => {
+            if (touchJoyActive && e.touches.length > 0) {
+                e.preventDefault();
+                onMove(e.touches[0].clientX, e.touches[0].clientY);
+            }
+        }, { passive: false });
+        canvas.addEventListener('touchend', (e) => {
+            if (e.touches.length === 0) onEnd();
+            else if (touchJoyActive && e.touches.length > 0) onMove(e.touches[0].clientX, e.touches[0].clientY);
+        });
+        canvas.addEventListener('touchcancel', onEnd);
     }
 
     function setupFireButton() {
@@ -212,8 +293,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function updatePlayer() {
-        const useGyro = gyroAvailable && ('ontouchstart' in window || navigator.maxTouchPoints > 0);
-        if (useGyro) {
+        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        if (isTouchDevice && (touchJoyActive || Math.abs(touchStickX) > 0.05 || Math.abs(touchStickY) > 0.05)) {
+            player.x += touchStickX * player.speed * 1.2;
+            player.y += touchStickY * player.speed * 1.2;
+        } else if (gyroAvailable && isTouchDevice) {
             const g = Math.abs(gyroGamma) <= GYRO_DEADZONE ? 0 : (gyroGamma > 0 ? Math.min(1, (gyroGamma - GYRO_DEADZONE) / 30) : Math.max(-1, (gyroGamma + GYRO_DEADZONE) / 30));
             const b = Math.abs(gyroBeta - 90) <= GYRO_DEADZONE ? 0 : (gyroBeta < 90 ? Math.min(1, (90 - gyroBeta) / 30) : Math.max(-1, (90 - gyroBeta) / 30));
             player.x += g * player.speed * GYRO_SENSITIVITY;
@@ -630,6 +714,27 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.globalAlpha = 1;
         });
     }
+
+    function drawJoystick() {
+        const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        if (!isTouch || !gameRunning) return;
+        ctx.save();
+        ctx.globalAlpha = touchJoyActive ? 0.9 : 0.5;
+        ctx.strokeStyle = '#4facfe';
+        ctx.fillStyle = 'rgba(79, 172, 254, 0.25)';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(JOY_BASE_X, JOY_BASE_Y, JOY_RADIUS, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(touchJoyThumbX || JOY_BASE_X, touchJoyThumbY || JOY_BASE_Y, 22, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(0, 242, 254, 0.6)';
+        ctx.fill();
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+        ctx.restore();
+    }
     
     let lastTime = 0;
     function gameLoop(timestamp = 0) {
@@ -657,6 +762,7 @@ document.addEventListener('DOMContentLoaded', () => {
         drawItems();
         drawPlayer();
         drawParticles();
+        drawJoystick();
         
         animationId = requestAnimationFrame(gameLoop);
     }

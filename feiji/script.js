@@ -64,12 +64,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let touchStickX = 0;
     let touchStickY = 0;
     let touchJoyActive = false;
-    let touchJoyThumbX = 70;
-    let touchJoyThumbY = HEIGHT - 90;
-    const JOY_BASE_X = 70;
-    const JOY_BASE_Y = HEIGHT - 90;
-    const JOY_RADIUS = 48;
-    const JOY_ACTIVE_ZONE_LEFT = 160;  // 触摸左侧此宽度内激活摇杆
     
     // DOM
     const scoreEl = document.getElementById('score');
@@ -84,6 +78,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const restartBtn = document.getElementById('restart-btn');
     const playBtn = document.getElementById('play-btn');
     const fireBtn = document.getElementById('fire-btn');
+    const joystickZone = document.getElementById('joystick-zone');
+    const joystickThumb = document.getElementById('joystick-thumb');
     
     // 敌机生成计时（毫秒）
     let enemySpawnTimer = 0;
@@ -105,72 +101,61 @@ document.addEventListener('DOMContentLoaded', () => {
         loadEnemyImages();
     }
 
-    function clientToCanvas(clientX, clientY) {
-        const rect = canvas.getBoundingClientRect();
-        const scaleX = canvas.width / rect.width;
-        const scaleY = canvas.height / rect.height;
-        return {
-            x: (clientX - rect.left) * scaleX,
-            y: (clientY - rect.top) * scaleY
-        };
-    }
-
     function setupTouchJoystick() {
+        if (!joystickZone || !joystickThumb) return;
+        let zoneRadius = 50;
+        const updateThumbPos = () => {
+            joystickThumb.style.transform = `translate(calc(-50% + ${touchStickX * zoneRadius}px), calc(-50% + ${touchStickY * zoneRadius}px))`;
+        };
         const onStart = (clientX, clientY) => {
-            const p = clientToCanvas(clientX, clientY);
-            if (p.x <= JOY_ACTIVE_ZONE_LEFT && gameRunning) {
-                touchJoyActive = true;
-                touchJoyThumbX = Math.max(0, Math.min(WIDTH, p.x));
-                touchJoyThumbY = Math.max(0, Math.min(HEIGHT, p.y));
-                updateTouchStickFromThumb();
-            }
+            const rect = joystickZone.getBoundingClientRect();
+            const w = rect.width;
+            const h = rect.height;
+            zoneRadius = Math.min(w, h) / 2 - 10;
+            const cx = rect.left + w / 2;
+            const cy = rect.top + h / 2;
+            touchJoyActive = true;
+            onMove(clientX, clientY);
         };
         const onMove = (clientX, clientY) => {
             if (!touchJoyActive) return;
-            const p = clientToCanvas(clientX, clientY);
-            let dx = p.x - JOY_BASE_X;
-            let dy = p.y - JOY_BASE_Y;
+            const rect = joystickZone.getBoundingClientRect();
+            const cx = rect.left + rect.width / 2;
+            const cy = rect.top + rect.height / 2;
+            let dx = clientX - cx;
+            let dy = clientY - cy;
             const len = Math.sqrt(dx * dx + dy * dy) || 1;
-            if (len > JOY_RADIUS) {
-                dx = (dx / len) * JOY_RADIUS;
-                dy = (dy / len) * JOY_RADIUS;
+            if (len > zoneRadius) {
+                dx = (dx / len) * zoneRadius;
+                dy = (dy / len) * zoneRadius;
             }
-            touchJoyThumbX = JOY_BASE_X + dx;
-            touchJoyThumbY = JOY_BASE_Y + dy;
-            updateTouchStickFromThumb();
+            touchStickX = dx / zoneRadius;
+            touchStickY = dy / zoneRadius;
+            updateThumbPos();
         };
         const onEnd = () => {
             touchJoyActive = false;
             touchStickX = 0;
             touchStickY = 0;
-            touchJoyThumbX = JOY_BASE_X;
-            touchJoyThumbY = JOY_BASE_Y;
+            updateThumbPos();
         };
-        function updateTouchStickFromThumb() {
-            const dx = touchJoyThumbX - JOY_BASE_X;
-            const dy = touchJoyThumbY - JOY_BASE_Y;
-            const len = Math.min(Math.sqrt(dx * dx + dy * dy), JOY_RADIUS);
-            const r = len / JOY_RADIUS;
-            touchStickX = len === 0 ? 0 : (dx / JOY_RADIUS);
-            touchStickY = len === 0 ? 0 : (dy / JOY_RADIUS);
-        }
-        canvas.addEventListener('touchstart', (e) => {
+        joystickZone.addEventListener('touchstart', (e) => {
             if (e.touches.length > 0) {
                 e.preventDefault();
                 onStart(e.touches[0].clientX, e.touches[0].clientY);
             }
         }, { passive: false });
-        canvas.addEventListener('touchmove', (e) => {
+        joystickZone.addEventListener('touchmove', (e) => {
             if (touchJoyActive && e.touches.length > 0) {
                 e.preventDefault();
                 onMove(e.touches[0].clientX, e.touches[0].clientY);
             }
         }, { passive: false });
-        canvas.addEventListener('touchend', (e) => {
+        joystickZone.addEventListener('touchend', (e) => {
             if (e.touches.length === 0) onEnd();
             else if (touchJoyActive && e.touches.length > 0) onMove(e.touches[0].clientX, e.touches[0].clientY);
         });
-        canvas.addEventListener('touchcancel', onEnd);
+        joystickZone.addEventListener('touchcancel', onEnd);
     }
 
     function setupFireButton() {
@@ -715,27 +700,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function drawJoystick() {
-        const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-        if (!isTouch || !gameRunning) return;
-        ctx.save();
-        ctx.globalAlpha = touchJoyActive ? 0.9 : 0.5;
-        ctx.strokeStyle = '#4facfe';
-        ctx.fillStyle = 'rgba(79, 172, 254, 0.25)';
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.arc(JOY_BASE_X, JOY_BASE_Y, JOY_RADIUS, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.arc(touchJoyThumbX || JOY_BASE_X, touchJoyThumbY || JOY_BASE_Y, 22, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(0, 242, 254, 0.6)';
-        ctx.fill();
-        ctx.stroke();
-        ctx.globalAlpha = 1;
-        ctx.restore();
-    }
-    
     let lastTime = 0;
     function gameLoop(timestamp = 0) {
         if (!gameRunning) return;
@@ -762,7 +726,6 @@ document.addEventListener('DOMContentLoaded', () => {
         drawItems();
         drawPlayer();
         drawParticles();
-        drawJoystick();
         
         animationId = requestAnimationFrame(gameLoop);
     }

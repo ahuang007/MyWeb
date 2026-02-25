@@ -36,7 +36,6 @@
         
         <div class="game-wrapper">
             <canvas id="gameCanvas"></canvas>
-            <button type="button" id="fire-btn" class="fire-btn" aria-label="发射">发射</button>
             <div id="game-over" class="game-over hidden">
                 <h2>游戏结束</h2>
                 <p>最终得分: <span id="final-score">0</span></p>
@@ -49,6 +48,13 @@
                 <p>击落敌机得分，避免被击中</p>
                 <button id="play-btn" class="btn btn-primary">开始</button>
             </div>
+        </div>
+        <div class="game-controls" id="game-controls" aria-hidden="true">
+            <div class="joystick-zone" id="joystick-zone">
+                <div class="joystick-base"></div>
+                <div class="joystick-thumb" id="joystick-thumb"></div>
+            </div>
+            <button type="button" id="fire-btn" class="fire-btn" aria-label="发射">发射</button>
         </div>
         
         <div class="instructions">

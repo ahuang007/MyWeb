@@ -1,0 +1,248 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    min-height: 100vh;
+    padding: 20px;
+    color: #eee;
+}
+
+.back-link {
+    position: absolute;
+    top: max(20px, env(safe-area-inset-top));
+    left: max(20px, env(safe-area-inset-left));
+    z-index: 1000;
+    color: #4facfe;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 16px;
+    padding: 10px 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    border: 2px solid #4facfe;
+}
+
+.back-link:hover {
+    background: #4facfe;
+    color: #1a1a2e;
+}
+
+.container {
+    max-width: 720px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+h1 {
+    font-size: 1.8rem;
+    margin-bottom: 12px;
+    color: #4facfe;
+}
+
+.game-info {
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.score-board {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid #4facfe;
+    color: #4facfe;
+    font-weight: bold;
+}
+
+.spawn-bar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+.spawn-btn {
+    padding: 8px 14px;
+    border: 2px solid #4facfe;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.4);
+    color: #00f2fe;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.spawn-btn:hover:not(:disabled) {
+    background: rgba(79, 172, 254, 0.3);
+}
+.spawn-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+.spawn-btn.locked {
+    opacity: 0.5;
+    color: #666;
+    border-color: #555;
+}
+.hidden {
+    display: none !important;
+}
+
+.game-wrapper {
+    position: relative;
+    display: inline-block;
+    border: 3px solid #4facfe;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 0 30px rgba(79, 172, 254, 0.3);
+}
+
+#gameCanvas {
+    display: block;
+    width: 100%;
+    max-width: 700px;
+    height: auto;
+    aspect-ratio: 700 / 400;
+    background: linear-gradient(180deg, #2d1b4e 0%, #1a1a2e 70%, #0d0d1a 100%);
+}
+
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+    z-index: 100;
+}
+
+.overlay.hidden {
+    display: none;
+}
+
+#shop-panel {
+    position: relative;
+}
+
+.btn-close-shop {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    padding: 8px 16px;
+    font-size: 14px;
+    background: rgba(108, 117, 125, 0.9);
+    color: #fff;
+    z-index: 10;
+}
+
+.btn-close-shop:hover {
+    background: #5a6268;
+}
+
+.overlay h2 {
+    font-size: 1.8rem;
+    margin-bottom: 16px;
+    color: #4facfe;
+}
+
+.overlay p {
+    margin-bottom: 20px;
+    color: #ccc;
+}
+
+.btn {
+    padding: 12px 28px;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 16px;
+    cursor: pointer;
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: #1a1a2e;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(79, 172, 254, 0.5);
+}
+
+.btn-shop {
+    padding: 6px 14px;
+    font-size: 14px;
+    background: rgba(236, 201, 75, 0.9);
+    color: #1a1a2e;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: #fff;
+    margin-top: 10px;
+}
+
+.shop-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 16px 0;
+    padding: 12px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 8px;
+}
+
+.shop-exp {
+    margin-bottom: 12px;
+    color: #ecc94b;
+    font-weight: bold;
+}
+
+.shop-section {
+    font-size: 1rem;
+    margin: 16px 0 8px;
+    color: #00f2fe;
+}
+
+.upgrade-btns {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.upgrade-btn {
+    padding: 8px 12px;
+    font-size: 13px;
+}
+
+.upgrade-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.shop-done {
+    color: #68d391;
+    margin: 4px 0;
+}
+
+.instructions {
+    margin-top: 14px;
+    font-size: 14px;
+    color: #888;
+}
+
+@media (max-width: 520px) {
+    h1 { font-size: 1.4rem; }
+    .game-info { gap: 12px; }
+}

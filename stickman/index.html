@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <title>火柴人战者遗产</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <a href="../index.html" class="back-link">← 返回</a>
+    <div class="container">
+        <h1>火柴人战者遗产</h1>
+        <div class="game-info">
+            <span class="score-board">第 <span id="level-num">1</span> 关 <span id="level-name"></span></span>
+            <span class="score-board">金币 <span id="gold">500</span></span>
+            <span class="score-board">钻石 <span id="diamonds">0</span></span>
+            <span class="score-board">经验 <span id="exp">0</span></span>
+            <span class="score-board">己方基地 <span id="base-hp">500</span>/500</span>
+            <span class="score-board">英雄 <span id="health">100</span>/100</span>
+            <button type="button" id="shop-btn" class="btn btn-shop">商店</button>
+        </div>
+        <div class="spawn-bar">
+            <button type="button" class="spawn-btn" data-type="miner" data-cost="150">矿工 150</button>
+            <button type="button" class="spawn-btn" data-type="club" data-cost="120">棒士 120</button>
+            <button type="button" class="spawn-btn" data-type="archer" data-cost="300">弓箭手 300</button>
+            <button type="button" class="spawn-btn" data-type="sword" data-cost="250">剑士 250</button>
+            <button type="button" class="spawn-btn" data-type="spear" data-cost="500">茅士 500</button>
+            <button type="button" class="spawn-btn" data-type="mage" data-cost="1200">法师 1200</button>
+            <button type="button" class="spawn-btn" data-type="giant" data-cost="1800">巨人 1800</button>
+        </div>
+        <div class="game-wrapper">
+            <canvas id="gameCanvas"></canvas>
+            <div id="game-over" class="overlay hidden">
+                <h2 id="game-over-title">失败</h2>
+                <p id="game-over-desc">己方基地被摧毁</p>
+                <button id="restart-btn" class="btn btn-primary">本关重试</button>
+            </div>
+            <div id="level-complete" class="overlay hidden">
+                <h2 id="level-complete-title">关卡通过！</h2>
+                <p>获得 100 钻石、2 经验点</p>
+                <button id="next-level-btn" class="btn btn-primary">下一关</button>
+            </div>
+            <div id="game-start" class="overlay">
+                <h2>火柴人战者遗产</h2>
+                <p>← → 移动 · 空格 跳跃 · Z 攻击</p>
+                <button id="start-btn" class="btn btn-primary">开始游戏</button>
+            </div>
+            <div id="shop-panel" class="overlay hidden">
+                <button type="button" id="shop-close" class="btn btn-close-shop" title="关闭返回游戏">× 关闭返回游戏</button>
+                <h2>商店</h2>
+                <p class="shop-exp">经验点：<span id="shop-exp">0</span>（通关+2，可强化士兵）</p>
+                <div class="shop-item">
+                    <span>淘金乐</span>
+                    <span>100 钻石 - 加快矿工挖矿</span>
+                    <button type="button" id="buy-goldrush" class="btn btn-primary">购买</button>
+                </div>
+                <p id="shop-goldrush-done" class="shop-done hidden">已购买淘金乐</p>
+                <div class="shop-item">
+                    <span>剑雨</span>
+                    <span>500 钻石 - 购买后使用 Q 不再消耗钻石</span>
+                    <button type="button" id="buy-arrowrain" class="btn btn-primary">购买</button>
+                </div>
+                <p id="shop-arrowrain-done" class="shop-done hidden">已购买剑雨</p>
+                <div class="shop-item">
+                    <span>剑士狂暴</span>
+                    <span>500 钻石 - 购买后使用 E 不再消耗钻石</span>
+                    <button type="button" id="buy-berserk" class="btn btn-primary">购买</button>
+                </div>
+                <p id="shop-berserk-done" class="shop-done hidden">已购买剑士狂暴</p>
+                <h3 class="shop-section">强化士兵（1 经验/次，攻击+1 血量+1）</h3>
+                <div class="upgrade-btns">
+                    <button type="button" class="btn upgrade-btn" data-type="miner">矿工+1</button>
+                    <button type="button" class="btn upgrade-btn" data-type="club">棒士+1</button>
+                    <button type="button" class="btn upgrade-btn" data-type="archer">弓箭手+1</button>
+                    <button type="button" class="btn upgrade-btn" data-type="sword">剑士+1</button>
+                    <button type="button" class="btn upgrade-btn" data-type="spear">茅士+1</button>
+                    <button type="button" class="btn upgrade-btn" data-type="mage">法师+1</button>
+                    <button type="button" class="btn upgrade-btn" data-type="giant">巨人+1</button>
+                </div>
+            </div>
+        </div>
+        <div class="instructions">
+            <p>←→ 移动 空格 跳跃 Z 攻击 · Q 剑雨 200钻石 E 狂暴 250钻石 · 己方雕像旁有弓箭手 · 控制的单位死亡切换下一士兵，基地血条空则失败</p>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

@@ -27,6 +27,10 @@ const startBtn = document.getElementById('startBtn');
 const pauseBtn = document.getElementById('pauseBtn');
 const restartBtn = document.getElementById('restartBtn');
 const playAgainBtn = document.getElementById('playAgainBtn');
+const btnUp = document.getElementById('btn-up');
+const btnLeft = document.getElementById('btn-left');
+const btnRight = document.getElementById('btn-right');
+const btnDown = document.getElementById('btn-down');
 
 // 初始化游戏
 function init() {
@@ -34,6 +38,10 @@ function init() {
     ctx = canvas.getContext('2d');
     canvas.width = CANVAS_WIDTH;
     canvas.height = CANVAS_HEIGHT;
+    
+    if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+        document.body.classList.add('mobile-fullscreen');
+    }
     
     // 加载最高分
     highScore = localStorage.getItem('snakeHighScore') || 0;
@@ -51,7 +59,16 @@ function init() {
     // 键盘控制
     document.addEventListener('keydown', handleKeyPress);
     
-    // 触摸控制（移动端）
+    // 手游方向键
+    if (btnUp) btnUp.addEventListener('pointerdown', (e) => { e.preventDefault(); setDir(0, -1); });
+    if (btnDown) btnDown.addEventListener('pointerdown', (e) => { e.preventDefault(); setDir(0, 1); });
+    if (btnLeft) btnLeft.addEventListener('pointerdown', (e) => { e.preventDefault(); setDir(-1, 0); });
+    if (btnRight) btnRight.addEventListener('pointerdown', (e) => { e.preventDefault(); setDir(1, 0); });
+    [btnUp, btnDown, btnLeft, btnRight].forEach(el => {
+        if (el) el.addEventListener('touchstart', (e) => e.preventDefault(), { passive: false });
+    });
+    
+    // 触摸控制（移动端滑动手势）
     let touchStartX = 0;
     let touchStartY = 0;
     
@@ -156,6 +173,13 @@ function togglePause() {
         gameLoop = setInterval(update, 200);
         pauseBtn.textContent = '暂停';
     }
+}
+
+// 手游方向键：设置下一帧方向（与键盘相同规则，不能反向）
+function setDir(dx, dy) {
+    if (!gameRunning || gamePaused) return;
+    if (dx !== 0 && direction.x === 0) nextDirection = { x: dx, y: 0 };
+    if (dy !== 0 && direction.y === 0) nextDirection = { x: 0, y: dy };
 }
 
 // 处理键盘输入

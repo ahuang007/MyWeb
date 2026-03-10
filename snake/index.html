@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
     <title>贪吃蛇游戏</title>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -30,11 +30,22 @@
         </div>
 
         <div class="game-container">
-            <canvas id="gameCanvas"></canvas>
+            <div class="canvas-wrap">
+                <canvas id="gameCanvas"></canvas>
+            </div>
             <div id="gameOver" class="game-over hidden">
                 <h2>游戏结束！</h2>
                 <p>最终得分: <span id="finalScore">0</span></p>
                 <button id="playAgainBtn" class="btn btn-primary">再玩一次</button>
+            </div>
+        </div>
+
+        <div class="mobile-controls" id="mobile-controls" aria-hidden="true">
+            <div class="dpad">
+                <button type="button" id="btn-up" class="ctrl-btn ctrl-up" aria-label="上">↑</button>
+                <button type="button" id="btn-left" class="ctrl-btn ctrl-left" aria-label="左">←</button>
+                <button type="button" id="btn-right" class="ctrl-btn ctrl-right" aria-label="右">→</button>
+                <button type="button" id="btn-down" class="ctrl-btn ctrl-down" aria-label="下">↓</button>
             </div>
         </div>
 

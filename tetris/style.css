@@ -228,6 +228,25 @@ h1 {
     height: 64px;
 }
 
+/* 手游顶部分数栏（仅移动端显示） */
+.mobile-score-bar {
+    display: none;
+}
+
+/* 桌面端元素（仅桌面显示） */
+.desktop-only {
+    display: block;
+}
+
+.desktop-title {
+    display: block;
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 13px;
+}
+
 .btn {
     padding: 12px 24px;
     border: none;
@@ -308,44 +327,88 @@ h1 {
     }
 }
 
-/* 手机端：全屏游戏区 + 下方操作栏 */
+/* 手机端：顶部分数栏 + 全屏游戏区 + 下方操作栏，无操作说明 */
 @media (hover: none) and (pointer: coarse) {
-    body.mobile-fullscreen {
+    html {
+        height: 100%;
+        height: 100dvh;
+    }
+    body {
         padding: 0;
-        overflow-x: hidden;
+        margin: 0;
+        overflow: hidden;
+        width: 100%;
+        min-height: 100%;
+        min-height: 100dvh;
+        position: fixed;
+        left: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
     }
     body.mobile-fullscreen .container {
         max-width: none;
+        width: 100%;
+        height: 100%;
+        height: 100dvh;
         padding: 0;
-        min-height: 100vh;
-        min-height: 100dvh;
+        margin: 0;
+        min-height: 0;
         display: flex;
         flex-direction: column;
         border-radius: 0;
+        overflow: hidden;
     }
-    body.mobile-fullscreen h1 {
+    .desktop-title,
+    body.mobile-fullscreen .desktop-only {
+        display: none !important;
+    }
+    .mobile-score-bar {
+        display: flex;
         flex-shrink: 0;
-        margin: 0;
-        padding: 10px 0 6px;
-        font-size: 1.3rem;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 8px 12px;
+        padding-top: max(8px, env(safe-area-inset-top));
+        padding-left: 90px;
+        padding-right: max(12px, env(safe-area-inset-right));
+        background: rgba(0, 0, 0, 0.35);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+        color: #fff;
+    }
+    .mobile-score-bar .mobile-score-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0;
+        font-size: 12px;
+    }
+    .mobile-score-bar .mobile-score-item .label {
+        font-size: 10px;
+        color: rgba(255, 255, 255, 0.8);
+    }
+    .mobile-score-bar .mobile-score-item .value {
+        font-size: 16px;
+        font-weight: bold;
+        color: #4facfe;
+    }
+    .mobile-score-bar .mobile-score-actions {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+    }
+    .mobile-score-bar .btn-sm {
+        padding: 6px 10px;
+        font-size: 12px;
     }
     body.mobile-fullscreen .game-wrapper {
         flex: 1;
         min-height: 0;
         flex-direction: column;
-        padding: 0 8px;
-    }
-    body.mobile-fullscreen .game-info {
-        flex: 0 0 auto;
-        width: 100%;
-        max-width: 100%;
-    }
-    body.mobile-fullscreen .info-panel {
-        padding: 12px;
-        margin-bottom: 8px;
+        padding: 0;
         display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
     }
     body.mobile-fullscreen .game-area {
         flex: 1;
@@ -353,19 +416,19 @@ h1 {
         display: flex;
         align-items: center;
         justify-content: center;
+        width: 100%;
+        position: relative;
     }
     body.mobile-fullscreen #gameCanvas {
         max-width: 100%;
+        max-height: 100%;
         width: auto;
         height: auto;
         aspect-ratio: 10 / 20;
         object-fit: contain;
     }
-    body.mobile-fullscreen .game-controls {
-        flex-shrink: 0;
-        padding: 8px 0;
-    }
     .mobile-controls-bar {
         display: flex;
+        flex-shrink: 0;
     }
 }

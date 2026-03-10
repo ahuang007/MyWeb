@@ -9,35 +9,47 @@
 <body>
     <a href="../index.html" class="back-link">← 返回首页</a>
     <div class="container">
-        <h1>俄罗斯方块</h1>
+        <h1 class="desktop-title">俄罗斯方块</h1>
         
         <div class="game-wrapper">
-            <div class="game-info">
+            <!-- 手游：顶部分数栏（仅移动端显示） -->
+            <div class="mobile-score-bar">
+                <div class="mobile-score-item"><span class="label">得分</span><span id="score" class="value">0</span></div>
+                <div class="mobile-score-item"><span class="label">最高</span><span id="highScore" class="value">0</span></div>
+                <div class="mobile-score-item"><span class="label">等级</span><span id="level" class="value">1</span></div>
+                <div class="mobile-score-item"><span class="label">行数</span><span id="lines" class="value">0</span></div>
+                <div class="mobile-score-actions">
+                    <button id="start-btn" class="btn btn-primary btn-sm">开始</button>
+                    <button id="pause-btn" class="btn btn-secondary btn-sm" disabled>暂停</button>
+                    <button id="restart-btn" class="btn btn-secondary btn-sm">重开</button>
+                </div>
+            </div>
+            
+            <!-- 桌面端：左侧信息区（仅桌面显示） -->
+            <div class="game-info desktop-only">
                 <div class="info-panel">
                     <div class="score-board">
                         <div class="score-item">
                             <span class="label">得分</span>
-                            <span id="score" class="value">0</span>
+                            <span id="score-desktop" class="value">0</span>
                         </div>
                         <div class="score-item">
                             <span class="label">最高分</span>
-                            <span id="highScore" class="value">0</span>
+                            <span id="highScore-desktop" class="value">0</span>
                         </div>
                         <div class="score-item">
                             <span class="label">等级</span>
-                            <span id="level" class="value">1</span>
+                            <span id="level-desktop" class="value">1</span>
                         </div>
                         <div class="score-item">
                             <span class="label">消除行数</span>
-                            <span id="lines" class="value">0</span>
+                            <span id="lines-desktop" class="value">0</span>
                         </div>
                     </div>
-                    
                     <div class="next-piece">
                         <div class="label">下一个</div>
                         <canvas id="nextCanvas" width="120" height="120"></canvas>
                     </div>
-                    
                     <div class="controls-info">
                         <h3>操作说明</h3>
                         <p>← → : 左右移动</p>
@@ -61,10 +73,10 @@
                 </div>
             </div>
             
-            <div class="game-controls">
-                <button id="start-btn" class="btn btn-primary">开始游戏</button>
-                <button id="pause-btn" class="btn btn-secondary" disabled>暂停</button>
-                <button id="restart-btn" class="btn btn-secondary">重新开始</button>
+            <div class="game-controls desktop-only">
+                <button id="start-btn-desktop" class="btn btn-primary">开始游戏</button>
+                <button id="pause-btn-desktop" class="btn btn-secondary" disabled>暂停</button>
+                <button id="restart-btn-desktop" class="btn btn-secondary">重新开始</button>
             </div>
             <div class="mobile-controls-bar" id="mobile-controls-bar">
                 <button type="button" id="btn-left" class="ctrl-btn ctrl-left" aria-label="左移">←</button>

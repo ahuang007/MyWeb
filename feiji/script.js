@@ -58,9 +58,13 @@ document.addEventListener('DOMContentLoaded', () => {
     let mobileFiring = false;
     let gyroGamma = 0;
     let gyroBeta = 0;
+    let smoothGamma = 0;
+    let smoothBeta = 0;
     let gyroAvailable = false;
-    const GYRO_SENSITIVITY = 2;
-    const GYRO_DEADZONE = 8;
+    const GYRO_SENSITIVITY = 2.2;
+    const GYRO_DEADZONE = 4;
+    const GYRO_SMOOTH = 0.25;  // 平滑系数，减小陀螺仪抖动与单边失灵
+    const GYRO_RANGE = 28;     // 倾斜约 28 度即视为满量程，提高灵敏度
     let touchStickX = 0;
     let touchStickY = 0;
     let touchJoyActive = false;
@@ -170,26 +174,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function setupGyro() {
         if (typeof DeviceOrientationEvent === 'undefined') return;
+        let listenerAdded = false;
         const onOrientation = (e) => {
             if (e.gamma != null) gyroGamma = e.gamma;
             if (e.beta != null) gyroBeta = e.beta;
+            smoothGamma = smoothGamma * (1 - GYRO_SMOOTH) + gyroGamma * GYRO_SMOOTH;
+            smoothBeta = smoothBeta * (1 - GYRO_SMOOTH) + gyroBeta * GYRO_SMOOTH;
             gyroAvailable = true;
         };
-        const reqPermission = () => {
-            if (typeof DeviceOrientationEvent.requestPermission !== 'function') {
-                window.addEventListener('deviceorientation', onOrientation);
-                return;
-            }
+        const addListener = () => {
+            if (listenerAdded) return;
+            listenerAdded = true;
+            window.addEventListener('deviceorientation', onOrientation);
+        };
+        if (typeof DeviceOrientationEvent.requestPermission !== 'function') {
+            addListener();
+            return;
+        }
+        playBtn.addEventListener('click', () => {
             DeviceOrientationEvent.requestPermission()
                 .then((perm) => {
-                    if (perm === 'granted') window.addEventListener('deviceorientation', onOrientation);
+                    if (perm === 'granted') addListener();
                 })
                 .catch(() => {});
-        };
-        window.addEventListener('deviceorientation', onOrientation);
-        if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-            playBtn.addEventListener('click', () => reqPermission(), { once: true });
-        }
+        }, { once: true });
     }
     
     function loadEnemyImages() {
@@ -234,6 +242,8 @@ document.addEventListener('DOMContentLoaded', () => {
         score = 0;
         level = 1;
         lives = 6;
+        smoothGamma = gyroGamma;
+        smoothBeta = gyroBeta;
         player.x = WIDTH / 2 - player.width / 2;
         player.y = HEIGHT - 80;
         playerBullets = [];
@@ -283,10 +293,10 @@ document.addEventListener('DOMContentLoaded', () => {
             player.x += touchStickX * player.speed * 1.2;
             player.y += touchStickY * player.speed * 1.2;
         } else if (gyroAvailable && isTouchDevice) {
-            const g = Math.abs(gyroGamma) <= GYRO_DEADZONE ? 0 : (gyroGamma > 0 ? Math.min(1, (gyroGamma - GYRO_DEADZONE) / 30) : Math.max(-1, (gyroGamma + GYRO_DEADZONE) / 30));
-            const b = Math.abs(gyroBeta - 90) <= GYRO_DEADZONE ? 0 : (gyroBeta < 90 ? Math.min(1, (90 - gyroBeta) / 30) : Math.max(-1, (90 - gyroBeta) / 30));
-            player.x += g * player.speed * GYRO_SENSITIVITY;
-            player.y += b * player.speed * GYRO_SENSITIVITY;
+            const gRaw = Math.abs(smoothGamma) <= GYRO_DEADZONE ? 0 : (smoothGamma > 0 ? Math.min(1, (smoothGamma - GYRO_DEADZONE) / GYRO_RANGE) : Math.max(-1, (smoothGamma + GYRO_DEADZONE) / GYRO_RANGE));
+            const bRaw = Math.abs(smoothBeta - 90) <= GYRO_DEADZONE ? 0 : (smoothBeta < 90 ? Math.min(1, (90 - smoothBeta) / GYRO_RANGE) : Math.max(-1, (90 - smoothBeta) / GYRO_RANGE));
+            player.x += gRaw * player.speed * GYRO_SENSITIVITY;
+            player.y += bRaw * player.speed * GYRO_SENSITIVITY;
         } else {
             if (keys['ArrowLeft'] || keys['KeyA']) player.x -= player.speed;
             if (keys['ArrowRight'] || keys['KeyD']) player.x += player.speed;

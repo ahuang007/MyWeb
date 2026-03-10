@@ -73,22 +73,48 @@ document.addEventListener('DOMContentLoaded', () => {
     let lastTime = 0;
     let dropInterval = 1000; // 初始下落间隔（毫秒）
     
-    // DOM元素
+    // DOM元素（手游顶栏 + 桌面侧栏可能同时存在，需同步更新）
     const scoreEl = document.getElementById('score');
     const highScoreEl = document.getElementById('highScore');
     const levelEl = document.getElementById('level');
     const linesEl = document.getElementById('lines');
+    const scoreElDesktop = document.getElementById('score-desktop');
+    const highScoreElDesktop = document.getElementById('highScore-desktop');
+    const levelElDesktop = document.getElementById('level-desktop');
+    const linesElDesktop = document.getElementById('lines-desktop');
     const finalScoreEl = document.getElementById('final-score');
     const gameOverEl = document.getElementById('game-over');
     const gamePausedEl = document.getElementById('game-paused');
     const startBtn = document.getElementById('start-btn');
     const pauseBtn = document.getElementById('pause-btn');
     const restartBtn = document.getElementById('restart-btn');
+    const startBtnDesktop = document.getElementById('start-btn-desktop');
+    const pauseBtnDesktop = document.getElementById('pause-btn-desktop');
+    const restartBtnDesktop = document.getElementById('restart-btn-desktop');
     const playAgainBtn = document.getElementById('play-again');
     const btnLeft = document.getElementById('btn-left');
     const btnRight = document.getElementById('btn-right');
     const btnRotate = document.getElementById('btn-rotate');
     const btnDown = document.getElementById('btn-down');
+
+    function setScoreDisplays(s, l, ln, hs) {
+        if (scoreEl) scoreEl.textContent = s;
+        if (levelEl) levelEl.textContent = l;
+        if (linesEl) linesEl.textContent = ln;
+        if (highScoreEl) highScoreEl.textContent = hs;
+        if (scoreElDesktop) scoreElDesktop.textContent = s;
+        if (levelElDesktop) levelElDesktop.textContent = l;
+        if (linesElDesktop) linesElDesktop.textContent = ln;
+        if (highScoreElDesktop) highScoreElDesktop.textContent = hs;
+    }
+    function setHighScoreDisplay(hs) {
+        if (highScoreEl) highScoreEl.textContent = hs;
+        if (highScoreElDesktop) highScoreElDesktop.textContent = hs;
+    }
+    function setButtonState(startDisabled, pauseDisabled, pauseText) {
+        [startBtn, startBtnDesktop].forEach(el => { if (el) el.disabled = startDisabled; });
+        [pauseBtn, pauseBtnDesktop].forEach(el => { if (el) { el.disabled = pauseDisabled; el.textContent = pauseText; } });
+    }
     
     // 陀螺仪：左右倾斜移动，带节流
     let gyroGamma = 0;
@@ -108,15 +134,15 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // 加载最高分
         highScore = parseInt(localStorage.getItem('tetrisHighScore') || '0');
-        highScoreEl.textContent = highScore;
+        setHighScoreDisplay(highScore);
         
         // 初始化棋盘
         initBoard();
         
-        // 事件监听
-        startBtn.addEventListener('click', startGame);
-        pauseBtn.addEventListener('click', togglePause);
-        restartBtn.addEventListener('click', resetGame);
+        // 事件监听（手游顶栏 + 桌面按钮）
+        [startBtn, startBtnDesktop].forEach(el => { if (el) el.addEventListener('click', startGame); });
+        [pauseBtn, pauseBtnDesktop].forEach(el => { if (el) el.addEventListener('click', togglePause); });
+        [restartBtn, restartBtnDesktop].forEach(el => { if (el) el.addEventListener('click', resetGame); });
         playAgainBtn.addEventListener('click', resetGame);
         document.addEventListener('keydown', handleKeyPress);
         setupMobileControls();
@@ -151,24 +177,26 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function setupGyro() {
         if (typeof DeviceOrientationEvent === 'undefined') return;
+        let listenerAdded = false;
         const onOrientation = (e) => {
             if (e.gamma != null) gyroGamma = e.gamma;
         };
-        const reqPermission = () => {
-            if (typeof DeviceOrientationEvent.requestPermission !== 'function') {
-                window.addEventListener('deviceorientation', onOrientation);
-                return;
-            }
-            DeviceOrientationEvent.requestPermission()
-                .then((perm) => {
-                    if (perm === 'granted') window.addEventListener('deviceorientation', onOrientation);
-                })
-                .catch(() => {});
+        const addListener = () => {
+            if (listenerAdded) return;
+            listenerAdded = true;
+            window.addEventListener('deviceorientation', onOrientation);
         };
-        window.addEventListener('deviceorientation', onOrientation);
-        if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-            startBtn.addEventListener('click', () => reqPermission(), { once: true });
+        if (typeof DeviceOrientationEvent.requestPermission !== 'function') {
+            addListener();
+            return;
         }
+        [startBtn, startBtnDesktop].forEach(el => {
+            if (el) el.addEventListener('click', () => {
+                DeviceOrientationEvent.requestPermission()
+                    .then((perm) => { if (perm === 'granted') addListener(); })
+                    .catch(() => {});
+            }, { once: true });
+        });
     }
     
     function applyGyroMove() {
@@ -215,8 +243,7 @@ document.addEventListener('DOMContentLoaded', () => {
         resetGame();
         gameRunning = true;
         gamePaused = false;
-        startBtn.disabled = true;
-        pauseBtn.disabled = false;
+        setButtonState(true, false, '暂停');
         
         currentPiece = createPiece();
         nextPiece = createPiece();
@@ -232,16 +259,12 @@ document.addEventListener('DOMContentLoaded', () => {
         level = 1;
         lines = 0;
         dropInterval = 1000;
-        scoreEl.textContent = score;
-        levelEl.textContent = level;
-        linesEl.textContent = lines;
+        setScoreDisplays(score, level, lines, highScore);
         gameOverEl.classList.add('hidden');
         gamePausedEl.classList.add('hidden');
         gameRunning = false;
         gamePaused = false;
-        startBtn.disabled = false;
-        pauseBtn.disabled = true;
-        pauseBtn.textContent = '暂停';
+        setButtonState(false, true, '暂停');
         draw();
     }
     
@@ -250,10 +273,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!gameRunning) return;
         gamePaused = !gamePaused;
         if (gamePaused) {
-            pauseBtn.textContent = '继续';
+            setButtonState(true, false, '继续');
             gamePausedEl.classList.remove('hidden');
         } else {
-            pauseBtn.textContent = '暂停';
+            setButtonState(true, false, '暂停');
             gamePausedEl.classList.add('hidden');
             lastTime = performance.now();
             gameLoop();
@@ -350,14 +373,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 dropInterval = Math.max(100, 1000 - (level - 1) * 100);
             }
             
-            scoreEl.textContent = score;
-            levelEl.textContent = level;
-            linesEl.textContent = lines;
-            
-            // 更新最高分
+            setScoreDisplays(score, level, lines, highScore);
             if (score > highScore) {
                 highScore = score;
-                highScoreEl.textContent = highScore;
+                setHighScoreDisplay(highScore);
                 localStorage.setItem('tetrisHighScore', highScore);
             }
         }
@@ -542,9 +561,7 @@ document.addEventListener('DOMContentLoaded', () => {
         gamePaused = false;
         finalScoreEl.textContent = score;
         gameOverEl.classList.remove('hidden');
-        startBtn.disabled = false;
-        pauseBtn.disabled = true;
-        pauseBtn.textContent = '暂停';
+        setButtonState(false, true, '暂停');
     }
     
     // 初始化

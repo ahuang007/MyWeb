@@ -213,6 +213,20 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
         shopCloseBtn.addEventListener('click', () => shopPanel.classList.add('hidden'));
+        // 移动端虚拟按键
+        function bindMobileBtn(id, code) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.addEventListener('touchstart', (e) => { e.preventDefault(); keys[code] = true; }, { passive: false });
+            el.addEventListener('touchend', (e) => { e.preventDefault(); keys[code] = false; }, { passive: false });
+            el.addEventListener('touchcancel', (e) => { e.preventDefault(); keys[code] = false; }, { passive: false });
+        }
+        bindMobileBtn('btn-left', 'ArrowLeft');
+        bindMobileBtn('btn-right', 'ArrowRight');
+        bindMobileBtn('btn-jump', 'Space');
+        bindMobileBtn('btn-attack', 'KeyZ');
+        bindMobileBtn('btn-arrowrain', 'KeyQ');
+        bindMobileBtn('btn-berserk', 'KeyE');
         buyGoldrushBtn.addEventListener('click', () => {
             if (!goldRush && diamonds >= GOLDRUSH_COST) {
                 diamonds -= GOLDRUSH_COST;
@@ -325,9 +339,9 @@ document.addEventListener('DOMContentLoaded', () => {
             level6Triggered = false;
             const t = UNIT_TYPES.sword;
             const stats = getUnitStats('sword');
-            const cols = 5;
+            const cols = 10;
             const gap = 4;
-            for (let i = 0; i < 20; i++) {
+            for (let i = 0; i < 100; i++) {
                 const col = i % cols;
                 const row = Math.floor(i / cols);
                 const x = statueRight.x - t.width - 12 - col * (t.width + gap);
@@ -467,12 +481,14 @@ document.addEventListener('DOMContentLoaded', () => {
             baseHpEl.textContent = statue.hp + '/' + statue.maxHp;
             if (statue.hp <= 0) endGame(false);
         } else if (statue.hp <= 0) {
-            if (currentLevel === TOTAL_LEVELS && !level7BossSpawned) {
-                level7BossSpawned = true;
-                const t = UNIT_TYPES.boss;
-                const stats = getUnitStats('boss');
-                const u = { type: 'boss', side: 'enemy', x: statueRight.x - t.width - 12, y: GROUND_Y - t.height, vx: -t.speed, width: t.width, height: t.height, hp: stats.hp, maxHp: stats.hp, upgradeLevel: 0, state: 'walk', facing: -1, attackTimer: 0, mineTimer: 0, speed: t.speed, range: t.range };
-                units.push(u);
+            if (currentLevel === TOTAL_LEVELS) {
+                if (!level7BossSpawned) {
+                    level7BossSpawned = true;
+                    const t = UNIT_TYPES.boss;
+                    const stats = getUnitStats('boss');
+                    const u = { type: 'boss', side: 'enemy', x: statueRight.x - t.width - 12, y: GROUND_Y - t.height, vx: -t.speed, width: t.width, height: t.height, hp: stats.hp, maxHp: stats.hp, upgradeLevel: 0, state: 'walk', facing: -1, attackTimer: 0, mineTimer: 0, speed: t.speed, range: t.range };
+                    units.push(u);
+                }
                 return;
             }
             levelComplete();

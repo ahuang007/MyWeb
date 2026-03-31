@@ -428,6 +428,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 // 添加点击事件
                 cell.addEventListener('click', () => handleCellClick(row, col));
+                cell.addEventListener('touchend', (e) => { e.preventDefault(); handleCellClick(row, col); }, { passive: false });
                 
                 boardElement.appendChild(cell);
             }

@@ -252,18 +252,31 @@ document.addEventListener('DOMContentLoaded', () => {
             const rect = boardElement.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
-            
+
             // 计算点击的交叉点坐标
             const col = Math.round(x / cellSize);
             const row = Math.round(y / cellSize);
-            
+
             console.log(`点击坐标: x=${x}, y=${y}, 行=${row}, 列=${col}`);
-            
+
             // 检查坐标是否在有效范围内
             if (row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE) {
                 handleBoardClick(row, col);
             }
         });
+
+        overlay.addEventListener('touchend', function(e) {
+            e.preventDefault();
+            const touch = e.changedTouches[0];
+            const rect = boardElement.getBoundingClientRect();
+            const x = touch.clientX - rect.left;
+            const y = touch.clientY - rect.top;
+            const col = Math.round(x / cellSize);
+            const row = Math.round(y / cellSize);
+            if (row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE) {
+                handleBoardClick(row, col);
+            }
+        }, { passive: false });
         
         boardElement.appendChild(overlay);
     }

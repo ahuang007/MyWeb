@@ -237,122 +237,129 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         return moves;
     }
+
     
-    // 评估移动的价值
-    function evaluateMove(move, player) {
+    // 棋盘静态评估（从 BLUE 视角）
+    function staticEval() {
         let score = 0;
-        const { from, to, piece } = move;
-        const targetPiece = board[to.row][to.col];
-        const targetInTrap = isTrap(to.row, to.col);
-        
-        // 1. 占领对方兽穴（获胜）- 最高优先级
-        // 红方要占领蓝方兽穴(0, 3)，蓝方要占领红方兽穴(8, 3)
-        if ((player === RED && to.row === 0 && to.col === 3) || 
-            (player === BLUE && to.row === 8 && to.col === 3)) {
-            score += 10000;
-            return score;
-        }
-        
-        // 2. 吃子价值
-        if (targetPiece && targetPiece.player !== player) {
-            if (canCapture(piece, targetPiece, targetInTrap)) {
-                // 根据被吃棋子的等级给分
-                score += targetPiece.type.level * 100;
-                // 如果吃的是高价值棋子，额外加分
-                if (targetPiece.type.level >= 6) {
-                    score += 200;
-                }
-            }
-        }
-        
-        // 3. 保护己方重要棋子（如果移动后不会被吃）
-        const originalPiece = board[from.row][from.col];
-        // 临时执行移动来检查安全性
-        board[to.row][to.col] = originalPiece;
-        board[from.row][from.col] = null;
-        
-        // 检查移动后的位置是否安全
-        const isSafe = !isThreatened(to.row, to.col, player);
-        if (isSafe && piece.type.level >= 6) {
-            score += 50;
-        } else if (!isSafe && piece.type.level >= 6) {
-            score -= 100; // 重要棋子被威胁，减分
-        }
-        
-        // 恢复棋盘
-        board[from.row][from.col] = originalPiece;
-        board[to.row][to.col] = targetPiece;
-        
-        // 4. 向对方兽穴推进
-        const enemyDenRow = player === RED ? 0 : 8;
-        const distanceToDen = Math.abs(to.row - enemyDenRow);
-        score += (9 - distanceToDen) * 10;
-        
-        // 5. 避免进入陷阱（除非有好处）
-        if (isTrap(to.row, to.col)) {
-            if (!targetPiece || !canCapture(piece, targetPiece, true)) {
-                score -= 30; // 进入陷阱有风险
-            }
-        }
-        
-        // 6. 控制中心区域
-        if (to.col === 3) {
-            score += 20;
-        }
-        
-        return score;
-    }
-    
-    // 检查位置是否被威胁（会被对方吃掉）
-    function isThreatened(row, col, player) {
-        const enemyPlayer = player === RED ? BLUE : RED;
         for (let r = 0; r < BOARD_HEIGHT; r++) {
             for (let c = 0; c < BOARD_WIDTH; c++) {
-                const piece = board[r][c];
-                if (piece && piece.player === enemyPlayer) {
-                    const validMoves = getValidMoves(r, c, enemyPlayer);
-                    for (const move of validMoves) {
-                        if (move.row === row && move.col === col) {
-                            const targetPiece = board[row][col];
-                            const targetInTrap = isTrap(row, col);
-                            if (canCapture(piece, targetPiece, targetInTrap)) {
-                                return true;
-                            }
-                        }
-                    }
-                }
+                const p = board[r][c];
+                if (!p) continue;
+                const sign = p.player === BLUE ? 1 : -1;
+                // 棋子本身价值
+                score += sign * p.type.level * 150;
+                // 向敌方兽穴推进价值
+                const enemyDen = p.player === BLUE ? 8 : 0;
+                const advance = (9 - Math.abs(r - enemyDen)) * 8;
+                score += sign * advance;
+                // 靠近中心列加分
+                score += sign * (3 - Math.abs(c - 3)) * 5;
+                // 占领陷阱周边加分（对对手的陷阱）
+                if (p.player === BLUE && isTrap(r, c)) score -= 80;
+                if (p.player === RED && isTrap(r, c)) score += 80;
             }
         }
-        return false;
+        return score;
     }
-    
-    // AI选择最佳移动
+
+    // Minimax Alpha-Beta for 斗兽棋
+    function dszAlphaBeta(depth, alpha, beta, isMaximizing) {
+        if (depth === 0) return staticEval();
+
+        const player = isMaximizing ? BLUE : RED;
+        const moves = getAllPossibleMoves(player);
+
+        if (moves.length === 0) return isMaximizing ? -99999 : 99999;
+
+        // 移动排序：优先吃子 / 进兽穴
+        moves.sort((a, b) => {
+            const scoreMove = (m) => {
+                let s = 0;
+                const target = board[m.to.row][m.to.col];
+                if (target) s += target.type.level * 100;
+                const enemyDen = player === BLUE ? 8 : 0;
+                s += (9 - Math.abs(m.to.row - enemyDen)) * 5;
+                return s;
+            };
+            return scoreMove(b) - scoreMove(a);
+        });
+
+        if (isMaximizing) {
+            let best = -Infinity;
+            for (const m of moves) {
+                const saved = board[m.to.row][m.to.col];
+                const attacker = board[m.from.row][m.from.col];
+                const targetInTrap = isTrap(m.to.row, m.to.col);
+                if (saved && !canCapture(attacker, saved, targetInTrap)) continue;
+                // 胜利条件：进入对方兽穴
+                if (player === BLUE && m.to.row === 8 && m.to.col === 3) return 99999 + depth;
+                board[m.to.row][m.to.col] = attacker;
+                board[m.from.row][m.from.col] = null;
+                const s = dszAlphaBeta(depth - 1, alpha, beta, false);
+                board[m.from.row][m.from.col] = attacker;
+                board[m.to.row][m.to.col] = saved;
+                if (s > best) best = s;
+                if (s > alpha) alpha = s;
+                if (beta <= alpha) break;
+            }
+            return best;
+        } else {
+            let best = Infinity;
+            for (const m of moves) {
+                const saved = board[m.to.row][m.to.col];
+                const attacker = board[m.from.row][m.from.col];
+                const targetInTrap = isTrap(m.to.row, m.to.col);
+                if (saved && !canCapture(attacker, saved, targetInTrap)) continue;
+                if (player === RED && m.to.row === 0 && m.to.col === 3) return -(99999 + depth);
+                board[m.to.row][m.to.col] = attacker;
+                board[m.from.row][m.from.col] = null;
+                const s = dszAlphaBeta(depth - 1, alpha, beta, true);
+                board[m.from.row][m.from.col] = attacker;
+                board[m.to.row][m.to.col] = saved;
+                if (s < best) best = s;
+                if (s < beta) beta = s;
+                if (beta <= alpha) break;
+            }
+            return best;
+        }
+    }
+
+    // AI选择最佳移动（Minimax depth=3）
     function aiMakeMove() {
         if (gameOver || currentPlayer !== BLUE) return;
-        
-        const possibleMoves = getAllPossibleMoves(BLUE);
-        if (possibleMoves.length === 0) {
-            // 没有可移动的棋子，游戏结束
-            return;
-        }
-        
-        // 评估所有移动并选择最佳
+
+        const moves = getAllPossibleMoves(BLUE);
+        if (moves.length === 0) return;
+
         let bestMove = null;
         let bestScore = -Infinity;
-        
-        possibleMoves.forEach(move => {
-            const score = evaluateMove(move, BLUE);
-            if (score > bestScore) {
-                bestScore = score;
-                bestMove = move;
+
+        for (const m of moves) {
+            const saved = board[m.to.row][m.to.col];
+            const attacker = board[m.from.row][m.from.col];
+            const targetInTrap = isTrap(m.to.row, m.to.col);
+            if (saved && !canCapture(attacker, saved, targetInTrap)) continue;
+            // 立即获胜
+            if (m.to.row === 8 && m.to.col === 3) {
+                bestMove = m;
+                break;
             }
-        });
-        
+            board[m.to.row][m.to.col] = attacker;
+            board[m.from.row][m.from.col] = null;
+            const s = dszAlphaBeta(2, -Infinity, Infinity, false);
+            board[m.from.row][m.from.col] = attacker;
+            board[m.to.row][m.to.col] = saved;
+            if (s > bestScore) {
+                bestScore = s;
+                bestMove = m;
+            }
+        }
+
         if (bestMove) {
-            // 延迟一下，让玩家看到AI的思考过程
             setTimeout(() => {
                 executeMove(bestMove.from.row, bestMove.from.col, bestMove.to.row, bestMove.to.col, BLUE);
-            }, 500);
+            }, 400);
         }
     }
     

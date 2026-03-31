@@ -695,70 +695,135 @@ document.addEventListener('DOMContentLoaded', () => {
         return advantage;
     }
     
-    // 找到最佳落子位置
-    function findBestMove() {
-        console.log('AI正在寻找最佳落子位置...');
-        let bestScore = -Infinity;
-        let bestMove = null;
-        
-        // 确定AI执的棋子颜色
-        const aiPlayer = aiFirst ? BLACK : WHITE;
-        const opponent = aiFirst ? WHITE : BLACK;
-        
-        // 最高优先级：检查对手是否有活四，必须立即封堵
-        const liveFourBlockMove = findLiveFourBlockMove(opponent);
-        if (liveFourBlockMove) {
-            console.log('发现对手活四！必须立即封堵！');
-            return liveFourBlockMove;
-        }
-        
-        // 如果是AI第一步，优先考虑中心位置
-        if (isFirstMove()) {
-            const center = Math.floor(BOARD_SIZE / 2);
-            if (gameBoard[center][center] === EMPTY) {
-                console.log('AI选择中心位置');
-                return { row: center, col: center };
-            }
-        }
-        
-        // 评估每个空位置
-        for (let row = 0; row < BOARD_SIZE; row++) {
-            for (let col = 0; col < BOARD_SIZE; col++) {
-                if (gameBoard[row][col] === EMPTY) {
-                    // 模拟落子（使用AI的棋子颜色）
-                    gameBoard[row][col] = aiPlayer;
-                    
-                    // 评估此位置
-                    const score = evaluatePosition(row, col, aiPlayer);
-                    
-                    // 撤销模拟
-                    gameBoard[row][col] = EMPTY;
-                    
-                    // 考虑防守优先级：如果玩家有严重威胁，优先防守
-                    const defensePriority = getDefensePriority(row, col);
-                    const finalScore = score + defensePriority;
-                    
-                    // 考虑战略价值
-                    const strategicValue = evaluateStrategicPosition(row, col);
-                    const enhancedScore = finalScore + strategicValue;
-                    
-                    // 更新最佳位置
-                    if (enhancedScore > bestScore) {
-                        bestScore = enhancedScore;
-                        bestMove = { row, col };
+    // 获取候选位置（有棋子周围2格以内的空位，避免遍历全盘）
+    function getCandidateMoves() {
+        const candidates = new Set();
+        const range = 2;
+        for (let r = 0; r < BOARD_SIZE; r++) {
+            for (let c = 0; c < BOARD_SIZE; c++) {
+                if (gameBoard[r][c] !== EMPTY) {
+                    for (let dr = -range; dr <= range; dr++) {
+                        for (let dc = -range; dc <= range; dc++) {
+                            const nr = r + dr, nc = c + dc;
+                            if (nr >= 0 && nr < BOARD_SIZE && nc >= 0 && nc < BOARD_SIZE && gameBoard[nr][nc] === EMPTY) {
+                                candidates.add(nr * BOARD_SIZE + nc);
+                            }
+                        }
                     }
                 }
             }
         }
-        
-        // 如果没有找到最佳位置，随机选择一个空位置
-        if (!bestMove) {
-            console.log('AI没有找到最佳位置，随机选择一个空位置');
-            bestMove = getRandomEmptyCell();
+        if (candidates.size === 0) {
+            const center = Math.floor(BOARD_SIZE / 2);
+            candidates.add(center * BOARD_SIZE + center);
         }
-        
-        console.log(`AI选择位置: 行=${bestMove.row}, 列=${bestMove.col}, 分数=${bestScore}`);
-        return bestMove;
+        return Array.from(candidates).map(key => ({ row: Math.floor(key / BOARD_SIZE), col: key % BOARD_SIZE }));
+    }
+
+    // 棋盘静态评估（全盘扫描每个方向的得分）
+    function boardScore(aiPlayer) {
+        const opponent = aiPlayer === BLACK ? WHITE : BLACK;
+        let score = 0;
+        const dirs = [[0,1],[1,0],[1,1],[1,-1]];
+        for (let r = 0; r < BOARD_SIZE; r++) {
+            for (let c = 0; c < BOARD_SIZE; c++) {
+                if (gameBoard[r][c] !== EMPTY) {
+                    const player = gameBoard[r][c];
+                    const sign = player === aiPlayer ? 1 : -1;
+                    for (const [dr, dc] of dirs) {
+                        score += sign * evaluateDirection(r, c, dr, dc, player);
+                    }
+                }
+            }
+        }
+        return score;
+    }
+
+    // Alpha-Beta Minimax
+    function alphaBeta(depth, alpha, beta, isMaximizing, aiPlayer) {
+        if (depth === 0) return boardScore(aiPlayer);
+        const player = isMaximizing ? aiPlayer : (aiPlayer === BLACK ? WHITE : BLACK);
+        const candidates = getCandidateMoves();
+        if (candidates.length === 0) return 0;
+
+        if (isMaximizing) {
+            let maxScore = -Infinity;
+            for (const { row, col } of candidates) {
+                gameBoard[row][col] = player;
+                // 检查是否已经胜出，剪枝
+                if (checkWinningMove(row, col, player)) {
+                    gameBoard[row][col] = EMPTY;
+                    return 100000 + depth;
+                }
+                const s = alphaBeta(depth - 1, alpha, beta, false, aiPlayer);
+                gameBoard[row][col] = EMPTY;
+                maxScore = Math.max(maxScore, s);
+                alpha = Math.max(alpha, s);
+                if (beta <= alpha) break;
+            }
+            return maxScore;
+        } else {
+            let minScore = Infinity;
+            for (const { row, col } of candidates) {
+                gameBoard[row][col] = player;
+                if (checkWinningMove(row, col, player)) {
+                    gameBoard[row][col] = EMPTY;
+                    return -(100000 + depth);
+                }
+                const s = alphaBeta(depth - 1, alpha, beta, true, aiPlayer);
+                gameBoard[row][col] = EMPTY;
+                minScore = Math.min(minScore, s);
+                beta = Math.min(beta, s);
+                if (beta <= alpha) break;
+            }
+            return minScore;
+        }
+    }
+
+    // 找到最佳落子位置（Minimax depth=4）
+    function findBestMove() {
+        const aiPlayer = aiFirst ? BLACK : WHITE;
+        const opponent = aiPlayer === BLACK ? WHITE : BLACK;
+
+        // 第一步走中心
+        if (isFirstMove()) {
+            const center = Math.floor(BOARD_SIZE / 2);
+            if (gameBoard[center][center] === EMPTY) return { row: center, col: center };
+        }
+
+        const candidates = getCandidateMoves();
+        let bestScore = -Infinity;
+        let bestMove = candidates[0];
+
+        for (const { row, col } of candidates) {
+            // 立即获胜
+            gameBoard[row][col] = aiPlayer;
+            if (checkWinningMove(row, col, aiPlayer)) {
+                gameBoard[row][col] = EMPTY;
+                return { row, col };
+            }
+            gameBoard[row][col] = EMPTY;
+
+            // 必须阻止对手获胜
+            gameBoard[row][col] = opponent;
+            if (checkWinningMove(row, col, opponent)) {
+                gameBoard[row][col] = EMPTY;
+                return { row, col };
+            }
+            gameBoard[row][col] = EMPTY;
+        }
+
+        for (const { row, col } of candidates) {
+            gameBoard[row][col] = aiPlayer;
+            const s = alphaBeta(3, -Infinity, Infinity, false, aiPlayer);
+            gameBoard[row][col] = EMPTY;
+            if (s > bestScore) {
+                bestScore = s;
+                bestMove = { row, col };
+            }
+        }
+
+        return bestMove || getRandomEmptyCell();
     }
 
     // 评估战略位置价值

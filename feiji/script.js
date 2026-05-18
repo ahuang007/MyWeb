@@ -65,6 +65,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const GYRO_DEADZONE = 4;
     const GYRO_SMOOTH = 0.25;  // 平滑系数，减小陀螺仪抖动与单边失灵
     const GYRO_RANGE = 28;     // 倾斜约 28 度即视为满量程，提高灵敏度
+    // 陀螺仪零点基线：以游戏开始瞬间用户的实际握持角度为"无操作"参考
+    let gyroBaselineGamma = 0;
+    let gyroBaselineBeta = 90;
+    let gyroCalibrating = false;
+    let gyroCalibrationSamples = 0;
+    let gyroCalibrationSumGamma = 0;
+    let gyroCalibrationSumBeta = 0;
+    const GYRO_CALIBRATION_COUNT = 15;
     let touchStickX = 0;
     let touchStickY = 0;
     let touchJoyActive = false;
@@ -181,6 +189,16 @@ document.addEventListener('DOMContentLoaded', () => {
             smoothGamma = smoothGamma * (1 - GYRO_SMOOTH) + gyroGamma * GYRO_SMOOTH;
             smoothBeta = smoothBeta * (1 - GYRO_SMOOTH) + gyroBeta * GYRO_SMOOTH;
             gyroAvailable = true;
+            if (gyroCalibrating) {
+                gyroCalibrationSumGamma += gyroGamma;
+                gyroCalibrationSumBeta += gyroBeta;
+                gyroCalibrationSamples++;
+                if (gyroCalibrationSamples >= GYRO_CALIBRATION_COUNT) {
+                    gyroBaselineGamma = gyroCalibrationSumGamma / gyroCalibrationSamples;
+                    gyroBaselineBeta = gyroCalibrationSumBeta / gyroCalibrationSamples;
+                    gyroCalibrating = false;
+                }
+            }
         };
         const addListener = () => {
             if (listenerAdded) return;
@@ -244,6 +262,12 @@ document.addEventListener('DOMContentLoaded', () => {
         lives = 6;
         smoothGamma = gyroGamma;
         smoothBeta = gyroBeta;
+        gyroBaselineGamma = gyroGamma;
+        gyroBaselineBeta = gyroBeta;
+        gyroCalibrating = true;
+        gyroCalibrationSamples = 0;
+        gyroCalibrationSumGamma = 0;
+        gyroCalibrationSumBeta = 0;
         player.x = WIDTH / 2 - player.width / 2;
         player.y = HEIGHT - 80;
         playerBullets = [];
@@ -293,8 +317,10 @@ document.addEventListener('DOMContentLoaded', () => {
             player.x += touchStickX * player.speed * 1.2;
             player.y += touchStickY * player.speed * 1.2;
         } else if (gyroAvailable && isTouchDevice) {
-            const gRaw = Math.abs(smoothGamma) <= GYRO_DEADZONE ? 0 : (smoothGamma > 0 ? Math.min(1, (smoothGamma - GYRO_DEADZONE) / GYRO_RANGE) : Math.max(-1, (smoothGamma + GYRO_DEADZONE) / GYRO_RANGE));
-            const bRaw = Math.abs(smoothBeta - 90) <= GYRO_DEADZONE ? 0 : (smoothBeta < 90 ? Math.min(1, (90 - smoothBeta) / GYRO_RANGE) : Math.max(-1, (90 - smoothBeta) / GYRO_RANGE));
+            const dGamma = smoothGamma - gyroBaselineGamma;
+            const dBeta = smoothBeta - gyroBaselineBeta;
+            const gRaw = Math.abs(dGamma) <= GYRO_DEADZONE ? 0 : (dGamma > 0 ? Math.min(1, (dGamma - GYRO_DEADZONE) / GYRO_RANGE) : Math.max(-1, (dGamma + GYRO_DEADZONE) / GYRO_RANGE));
+            const bRaw = Math.abs(dBeta) <= GYRO_DEADZONE ? 0 : (dBeta < 0 ? Math.min(1, (-dBeta - GYRO_DEADZONE) / GYRO_RANGE) : Math.max(-1, (-dBeta + GYRO_DEADZONE) / GYRO_RANGE));
             player.x += gRaw * player.speed * GYRO_SENSITIVITY;
             player.y += bRaw * player.speed * GYRO_SENSITIVITY;
         } else {
